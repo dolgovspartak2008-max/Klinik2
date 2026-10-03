@@ -559,7 +559,7 @@ html.is-locked { background: var(--navy-900); }
 .route-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; }
 .route-btn:hover svg { transform: none; }
 
-/* Команда: последняя карточка не висит одна */
+/* Команда: главный врач сверху на всю ширину, остальные ровно по 2 */
 @media (max-width: 1180px) and (min-width: 681px) {
   .team-grid { grid-template-columns: repeat(6, 1fr); }
   .team-grid .member { grid-column: span 2; }
@@ -567,9 +567,9 @@ html.is-locked { background: var(--navy-900); }
   .team-grid .member:nth-child(4) .member__photo, .team-grid .member:nth-child(5) .member__photo { aspect-ratio: 4 / 3; }
 }
 @media (max-width: 680px) {
-  .team-grid .member:last-child { grid-column: 1 / -1; }
-  .team-grid .member:last-child .member__photo { aspect-ratio: 4 / 3; }
-  .team-grid .member:last-child .member__photo img { object-position: center 20%; }
+  .team-grid .member:first-child { grid-column: 1 / -1; }
+  .team-grid .member:first-child .member__photo { aspect-ratio: 4 / 3; }
+  .team-grid .member:first-child .member__photo img { object-position: center 20%; }
   .dir-card__foot { flex-direction: column; align-items: flex-start; gap: 4px; }
   .dir-card h3 { font-size: 20px; }
   .dir-card__more { font-size: 13px; padding: 4px 0; }
@@ -583,3 +583,6 @@ html.is-locked { background: var(--navy-900); }
   .proc-modal__close { background: rgba(255,255,255,.92); border-color: transparent; }
   .proc-modal__actions .btn { width: 100%; }
 }
+
+/* Фото главного врача в блоке «О главном враче» */
+.doctor__photo img.doctor__img--xray { object-position: 48% center; }
