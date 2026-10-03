@@ -284,7 +284,7 @@
   const price = document.getElementById('pm-price');
   const content = document.getElementById('pm-content');
   const book = document.getElementById('pm-book');
-  let opener = null, service = '';
+  let opener = null, service = '', savedY = 0, hasState = false;
 
   const esc = (t) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -292,6 +292,7 @@
     const d = INFO[card.dataset.proc];
     if (!d) return;
     opener = from;
+    savedY = window.scrollY;
     service = d.service;
     const src = card.querySelector('.dir-card__img img');
     img.src = src.getAttribute('src');
@@ -305,15 +306,30 @@
     if (modal.showModal) modal.showModal(); else modal.setAttribute('open', '');
     root.classList.add('is-locked');
     requestAnimationFrame(() => requestAnimationFrame(() => modal.classList.add('is-shown')));
+    /* Жест/кнопка «назад» закрывает окно, а не уводит с сайта */
+    try { history.pushState({ procModal: true }, ''); hasState = true; } catch (e) { hasState = false; }
   };
-  const close = (after) => {
+  const finish = (after) => {
     modal.classList.remove('is-shown');
     setTimeout(() => {
       if (modal.open) modal.close();
       root.classList.remove('is-locked');
+      window.scrollTo({ top: savedY, behavior: 'instant' }); /* возвращаемся ровно туда, откуда открыли */
       if (after) after(); else if (opener) opener.focus({ preventScroll: true });
     }, reduce ? 0 : 350);
   };
+  let pendingAfter = null;
+  const close = (after) => {
+    if (!modal.open) return;
+    if (hasState) { pendingAfter = after || null; hasState = false; history.back(); }
+    else finish(after);
+  };
+  window.addEventListener('popstate', () => {
+    if (!modal.open) return;
+    hasState = false;
+    const a = pendingAfter; pendingAfter = null;
+    finish(a);
+  });
 
   document.querySelectorAll('.dir-card[data-proc]').forEach((card) => {
     const btn = card.querySelector('.dir-card__more');
