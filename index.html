@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="preload" as="image" href="/assets/img/gorshechnikov.webp" />
+  <link rel="preload" as="image" href="/assets/img/doctor.webp" />
   <link rel="stylesheet" href="/assets/css/style.css" />
 </head>
 <body class="is-loading">
@@ -56,16 +56,61 @@
         <a href="#team">Команда</a>
         <a href="#faq">Вопросы</a>
         <a href="#contacts">Контакты</a>
-        <a href="tel:+79930440619" class="nav__phone-mobile">+7 993 044-06-19</a>
       </nav>
       <a class="header__phone" href="tel:+79930440619">
         <span>+7 993 044-06-19</span>
         <small>Салават, ул. Юлаева, 29а</small>
       </a>
       <a href="#booking" class="btn btn--gold btn--sm header__cta">Записаться</a>
-      <button class="burger" id="burger" aria-label="Открыть меню" aria-expanded="false" aria-controls="nav"><span></span><span></span></button>
+      <button class="burger" id="burger" aria-label="Открыть меню" aria-expanded="false" aria-controls="mmenu"><span></span><span></span></button>
     </div>
   </header>
+
+  <!-- ============ MOBILE MENU (отдельный полноэкранный слой) ============ -->
+  <div class="mmenu" id="mmenu" role="dialog" aria-modal="true" aria-label="Меню" hidden>
+    <div class="mmenu__bg" aria-hidden="true">
+      <div class="hero__glow hero__glow--1"></div>
+      <div class="hero__grid"></div>
+      <svg class="mmenu__watermark" viewBox="0 0 124 100" fill="none">
+        <path d="M68 28.1 A34 34 0 1 0 68 71.9 L68 54 L53 54" /><path d="M62 86 L87 14 L112 86" /><path d="M73 62 L101 62" />
+      </svg>
+    </div>
+    <div class="mmenu__top">
+      <a href="#top" class="logo logo--light" data-close>
+        <svg class="logo__mark" viewBox="0 0 124 100" fill="none" aria-hidden="true">
+          <path d="M68 28.1 A34 34 0 1 0 68 71.9 L68 54 L53 54" /><path d="M62 86 L87 14 L112 86" /><path d="M73 62 L101 62" />
+        </svg>
+        <span class="logo__text"><b>Кабинет здоровья</b><small>доктора Горшечникова</small></span>
+      </a>
+      <button class="mmenu__close" type="button" aria-label="Закрыть меню" data-close><span></span><span></span></button>
+    </div>
+
+    <div class="mmenu__body">
+      <nav class="mmenu__nav" aria-label="Меню">
+        <a href="#directions" data-close><i>01</i>Направления</a>
+        <a href="#prices" data-close><i>02</i>Цены</a>
+        <a href="#doctor" data-close><i>03</i>О враче</a>
+        <a href="#team" data-close><i>04</i>Команда</a>
+        <a href="#faq" data-close><i>05</i>Вопросы</a>
+        <a href="#contacts" data-close><i>06</i>Контакты</a>
+      </nav>
+
+      <a href="#doctor" class="mmenu__doctor" data-close>
+        <img src="/assets/img/doctor.webp" alt="" width="1200" height="1617" loading="lazy" />
+        <span><small>Главный врач</small><b>Андрей Горшечников</b><em>Физиотерапевт · приём по записи</em></span>
+      </a>
+
+      <div class="mmenu__contacts">
+        <a href="tel:+79930440619" class="mmenu__phone">+7 993 044-06-19</a>
+        <p>Салават, ул. Юлаева, 29а<br />Дом Быта, 3 этаж</p>
+      </div>
+
+      <div class="mmenu__actions">
+        <a href="#booking" class="btn btn--gold btn--lg btn--block" data-close>Записаться на приём <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a href="https://wa.me/79930440619" class="btn btn--ghost btn--lg btn--block" target="_blank" rel="noopener">Написать в WhatsApp</a>
+      </div>
+    </div>
+  </div>
 
   <main id="main">
     <!-- ============ HERO ============ -->
@@ -88,18 +133,13 @@
             <a href="#booking" class="btn btn--gold btn--lg magnetic">Записаться на консультацию <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
             <a href="#prices" class="btn btn--ghost btn--lg">Смотреть цены</a>
           </div>
-          <ul class="hero__features hero-in">
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Современное оборудование</li>
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Индивидуальный подход</li>
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Комплексные программы</li>
-          </ul>
         </div>
 
         <div class="hero__visual">
           <div class="hero__arch">
             <div class="hero__arch-ring" aria-hidden="true"></div>
             <figure class="hero__photo" data-parallax="0.06">
-              <img src="/assets/img/gorshechnikov.webp" width="850" height="1320" alt="Главный врач Андрей Горшечников в кабинете" fetchpriority="high" />
+              <img src="/assets/img/doctor.webp" width="1200" height="1617" alt="Главный врач Андрей Горшечников в кабинете" fetchpriority="high" decoding="async" />
             </figure>
             <div class="float-card float-card--doctor">
               <span class="float-card__label">Главный врач</span>
@@ -131,8 +171,8 @@
     <!-- ============ MARQUEE ============ -->
     <div class="marquee" aria-hidden="true">
       <div class="marquee__track">
-        <span>Массаж</span><i>✦</i><span>Хиджама</span><i>✦</i><span>Ударно-волновая терапия</span><i>✦</i><span>Иглоукалывание</span><i>✦</i><span>Вакуумно-градиентная терапия</span><i>✦</i><span>Магнитно-лазерная терапия</span><i>✦</i><span>Тейпирование</span><i>✦</i><span>Лечение пяточной шпоры</span><i>✦</i>
-        <span>Массаж</span><i>✦</i><span>Хиджама</span><i>✦</i><span>Ударно-волновая терапия</span><i>✦</i><span>Иглоукалывание</span><i>✦</i><span>Вакуумно-градиентная терапия</span><i>✦</i><span>Магнитно-лазерная терапия</span><i>✦</i><span>Тейпирование</span><i>✦</i><span>Лечение пяточной шпоры</span><i>✦</i>
+        <span>Массаж</span><i>✦</i><span>Хиджама</span><i>✦</i><span>Ударно-волновая терапия</span><i>✦</i><span>Иглоукалывание</span><i>✦</i><span>Вакуумно-градиентная терапия</span><i>✦</i><span>Магнитно-лазерная терапия</span><i>✦</i><span>Лечение пяточной шпоры</span><i>✦</i>
+        <span>Массаж</span><i>✦</i><span>Хиджама</span><i>✦</i><span>Ударно-волновая терапия</span><i>✦</i><span>Иглоукалывание</span><i>✦</i><span>Вакуумно-градиентная терапия</span><i>✦</i><span>Магнитно-лазерная терапия</span><i>✦</i><span>Лечение пяточной шпоры</span><i>✦</i>
       </div>
     </div>
 
@@ -150,6 +190,14 @@
 
         <div class="dir-grid">
           <article class="dir-card reveal">
+            <div class="dir-card__img"><img src="/assets/img/hijama-hd.webp" alt="Процедура хиджамы: вакуумные банки на спине" loading="lazy" width="1200" height="798" /></div>
+            <div class="dir-card__body">
+              <h3>Хиджама</h3>
+              <p>Вакуумные банки с насечками — отдельно или в составе комплекса.</p>
+              <span class="dir-card__price">2 500 ₽</span>
+            </div>
+          </article>
+          <article class="dir-card reveal">
             <div class="dir-card__img"><img src="/assets/img/massage.webp" alt="Массаж спины" loading="lazy" width="520" height="346" /></div>
             <div class="dir-card__body">
               <h3>Массаж</h3>
@@ -158,15 +206,7 @@
             </div>
           </article>
           <article class="dir-card reveal">
-            <div class="dir-card__img"><img src="/assets/img/hijama.webp" alt="Процедура хиджамы" loading="lazy" width="520" height="343" /></div>
-            <div class="dir-card__body">
-              <h3>Хиджама</h3>
-              <p>Вакуумные банки с насечками — отдельно или в составе комплекса.</p>
-              <span class="dir-card__price">2 500 ₽</span>
-            </div>
-          </article>
-          <article class="dir-card reveal">
-            <div class="dir-card__img"><img src="/assets/img/equipment.webp" alt="Аппарат ударно-волновой терапии" loading="lazy" width="520" height="343" /></div>
+            <div class="dir-card__img"><img src="/assets/img/shockwave-device.webp" alt="Аппарат ударно-волновой терапии" loading="lazy" width="960" height="1280" class="pos-top" /></div>
             <div class="dir-card__body">
               <h3>Ударно-волновая терапия</h3>
               <p>Аппаратное воздействие акустическими волнами на проблемную зону.</p>
@@ -174,7 +214,7 @@
             </div>
           </article>
           <article class="dir-card reveal">
-            <div class="dir-card__img"><img src="/assets/img/vacuum.webp" alt="Вакуумно-градиентная терапия" loading="lazy" width="520" height="343" /></div>
+            <div class="dir-card__img"><img src="/assets/img/vacuum-hd.webp" alt="Вакуумно-градиентная терапия" loading="lazy" width="1000" height="1333" /></div>
             <div class="dir-card__body">
               <h3>Вакуумно-градиентная терапия</h3>
               <p>Аппаратный вакуумный массаж для мышц и мягких тканей.</p>
@@ -182,7 +222,7 @@
             </div>
           </article>
           <article class="dir-card reveal">
-            <div class="dir-card__img"><img src="/assets/img/magnet-laser.webp" alt="Магнитно-лазерная терапия" loading="lazy" width="520" height="343" /></div>
+            <div class="dir-card__img"><img src="/assets/img/magnet-hd.webp" alt="Магнитно-импульсная и лазерная терапия" loading="lazy" width="1000" height="1333" /></div>
             <div class="dir-card__body">
               <h3>Магнитно-лазерная терапия</h3>
               <p>Физиотерапия магнитным полем и лазерным излучением.</p>
@@ -190,7 +230,7 @@
             </div>
           </article>
           <article class="dir-card reveal">
-            <div class="dir-card__img"><img src="/assets/img/laser.webp" alt="Иглоукалывание и лазер" loading="lazy" width="520" height="346" /></div>
+            <div class="dir-card__img"><img src="/assets/img/acupuncture.webp" alt="Иглоукалывание" loading="lazy" width="1200" height="798" /></div>
             <div class="dir-card__body">
               <h3>Иглоукалывание</h3>
               <p>Рефлексотерапия — в том числе в сочетании с лазером.</p>
@@ -198,21 +238,11 @@
             </div>
           </article>
           <article class="dir-card reveal">
-            <div class="dir-card__img"><img src="/assets/img/shockwave.webp" alt="Лечение пяточной шпоры" loading="lazy" width="520" height="350" /></div>
+            <div class="dir-card__img"><img src="/assets/img/heel-spur.webp" alt="Ударно-волновое лечение пяточной шпоры" loading="lazy" width="1200" height="798" /></div>
             <div class="dir-card__body">
               <h3>Лечение пяточной шпоры</h3>
               <p>Курс процедур, подобранный специалистом после осмотра стопы.</p>
               <span class="dir-card__price">от 1 000 ₽</span>
-            </div>
-          </article>
-          <article class="dir-card dir-card--accent reveal">
-            <div class="dir-card__icon" aria-hidden="true">
-              <svg viewBox="0 0 64 64"><path d="M14 50 L40 12"/><path d="M24 54 L50 16"/><path d="M14 50c3 3 7 5 10 4M40 12c3 0 8 1 10 4"/></svg>
-            </div>
-            <div class="dir-card__body">
-              <h3>Тейпирование</h3>
-              <p>Кинезиотейпы для поддержки мышц и суставов в повседневной жизни и спорте.</p>
-              <span class="dir-card__price">500 ₽</span>
             </div>
           </article>
         </div>
@@ -235,8 +265,7 @@
             <p class="promo__note">Предложение действует для новых пациентов. Подробности уточняйте по телефону.</p>
           </div>
           <div class="promo__visual" aria-hidden="true">
-            <img src="/assets/img/diagnostics.webp" alt="" loading="lazy" width="520" height="340" />
-            <div class="promo__price"><s>платно</s><b>0 ₽</b></div>
+            <img src="/assets/img/diagnostics-hd.webp" alt="" loading="lazy" width="1600" height="1064" />
           </div>
           <a href="#booking" class="btn btn--gold btn--lg promo__btn magnetic">Записаться бесплатно <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         </div>
@@ -259,7 +288,6 @@
           <button role="tab" aria-selected="true" aria-controls="tab-massage" id="t-massage" class="tab is-active">Массаж</button>
           <button role="tab" aria-selected="false" aria-controls="tab-physio" id="t-physio" class="tab" tabindex="-1">Физиотерапия</button>
           <button role="tab" aria-selected="false" aria-controls="tab-complex" id="t-complex" class="tab" tabindex="-1">Комплексы</button>
-          <button role="tab" aria-selected="false" aria-controls="tab-other" id="t-other" class="tab" tabindex="-1">Другое</button>
           <span class="tabs__ink" aria-hidden="true"></span>
         </div>
 
@@ -286,6 +314,7 @@
                 <tr><td>Иглоукалывание</td><td>1 500 ₽</td></tr>
                 <tr><td>Ударно-волновая терапия</td><td>от 1 000 ₽</td></tr>
                 <tr><td>Магнитно-лазерная терапия</td><td>от 1 000 ₽</td></tr>
+                <tr><td>Лечение пяточной шпоры</td><td>от 1 000 ₽</td></tr>
               </tbody>
             </table>
           </div>
@@ -318,15 +347,6 @@
               </article>
             </div>
           </div>
-          <div class="tab-panel" role="tabpanel" id="tab-other" aria-labelledby="t-other" hidden>
-            <table class="price-table price-table--2">
-              <thead><tr><th>Услуга</th><th>Стоимость</th></tr></thead>
-              <tbody>
-                <tr><td>Лечение пяточной шпоры</td><td>от 1 000 ₽</td></tr>
-                <tr><td>Тейпирование</td><td>500 ₽</td></tr>
-              </tbody>
-            </table>
-          </div>
         </div>
       </div>
     </section>
@@ -335,7 +355,7 @@
     <section class="section section--sand" id="doctor">
       <div class="container doctor">
         <div class="doctor__photo reveal">
-          <img src="/assets/img/gorshechnikov.webp" alt="Андрей Горшечников, главный врач" loading="lazy" width="850" height="1320" />
+          <img src="/assets/img/doctor.webp" alt="Андрей Горшечников, главный врач" loading="lazy" width="1200" height="1617" />
           <div class="doctor__sign">Андрей Горшечников</div>
         </div>
         <div class="doctor__content">
@@ -371,7 +391,7 @@
         </div>
         <div class="team-grid">
           <article class="member reveal">
-            <div class="member__photo"><img src="/assets/img/gorshechnikov.webp" alt="Горшечников Андрей" loading="lazy" width="850" height="1320" /></div>
+            <div class="member__photo"><img src="/assets/img/doctor.webp" alt="Горшечников Андрей" loading="lazy" width="1200" height="1617" /></div>
             <div class="member__body"><h3>Горшечников Андрей</h3><p>Главный врач, физиотерапевт</p></div>
           </article>
           <article class="member reveal">
@@ -394,30 +414,11 @@
       </div>
     </section>
 
-    <!-- ============ STEPS ============ -->
-    <section class="section section--navy" id="steps">
-      <div class="container">
-        <div class="section__head reveal">
-          <span class="section__num">05</span>
-          <div>
-            <p class="eyebrow eyebrow--light">Как проходит лечение</p>
-            <h2 class="section__title">Четыре шага <em>к восстановлению</em></h2>
-          </div>
-        </div>
-        <ol class="steps">
-          <li class="step reveal"><span class="step__n">01</span><h3>Запись</h3><p>Оставьте заявку или позвоните — подберём удобное время.</p></li>
-          <li class="step reveal"><span class="step__n">02</span><h3>Консультация</h3><p>Специалист выслушает жалобы и проведёт осмотр.</p></li>
-          <li class="step reveal"><span class="step__n">03</span><h3>План лечения</h3><p>Подбираем процедуры и комплекс именно под вашу задачу.</p></li>
-          <li class="step reveal"><span class="step__n">04</span><h3>Курс и контроль</h3><p>Проходите процедуры, а мы отслеживаем динамику.</p></li>
-        </ol>
-      </div>
-    </section>
-
     <!-- ============ FAQ ============ -->
     <section class="section" id="faq">
       <div class="container faq">
         <div class="section__head section__head--left reveal">
-          <span class="section__num">06</span>
+          <span class="section__num">05</span>
           <div>
             <p class="eyebrow">Частые вопросы</p>
             <h2 class="section__title">Отвечаем <em>заранее</em></h2>
@@ -452,7 +453,7 @@
     <section class="section section--sand" id="contacts">
       <div class="container booking" id="booking">
         <div class="booking__info reveal">
-          <span class="section__num">07</span>
+          <span class="section__num">06</span>
           <p class="eyebrow">Запись и контакты</p>
           <h2 class="section__title">Запишитесь <em>на удобное время</em></h2>
           <ul class="contacts">
@@ -460,8 +461,9 @@
             <li><span>Адрес</span><p>Салават, ул. Юлаева, 29а<br />Дом Быта, 3 этаж</p></li>
           </ul>
           <div class="map">
-            <iframe title="Карта: Салават, ул. Юлаева, 29а" loading="lazy" src="https://yandex.ru/map-widget/v1/?text=%D0%A1%D0%B0%D0%BB%D0%B0%D0%B2%D0%B0%D1%82%2C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%AE%D0%BB%D0%B0%D0%B5%D0%B2%D0%B0%2C%2029%D0%B0&amp;z=16"></iframe>
+            <iframe title="Карта: Салават, ул. Юлаева, 29а, Дом Быта, 3 этаж" loading="lazy" src="https://yandex.ru/map-widget/v1/?mode=search&amp;text=%D0%A0%D0%BE%D1%81%D1%81%D0%B8%D1%8F%2C%20%D0%A0%D0%B5%D1%81%D0%BF%D1%83%D0%B1%D0%BB%D0%B8%D0%BA%D0%B0%20%D0%91%D0%B0%D1%88%D0%BA%D0%BE%D1%80%D1%82%D0%BE%D1%81%D1%82%D0%B0%D0%BD%2C%20%D0%A1%D0%B0%D0%BB%D0%B0%D0%B2%D0%B0%D1%82%2C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%AE%D0%BB%D0%B0%D0%B5%D0%B2%D0%B0%2C%2029%D0%90&amp;z=17"></iframe>
           </div>
+          <a class="map__link" href="https://yandex.ru/maps/?mode=search&amp;text=%D0%A0%D0%BE%D1%81%D1%81%D0%B8%D1%8F%2C%20%D0%A0%D0%B5%D1%81%D0%BF%D1%83%D0%B1%D0%BB%D0%B8%D0%BA%D0%B0%20%D0%91%D0%B0%D1%88%D0%BA%D0%BE%D1%80%D1%82%D0%BE%D1%81%D1%82%D0%B0%D0%BD%2C%20%D0%A1%D0%B0%D0%BB%D0%B0%D0%B2%D0%B0%D1%82%2C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%AE%D0%BB%D0%B0%D0%B5%D0%B2%D0%B0%2C%2029%D0%90" target="_blank" rel="noopener">Открыть в Яндекс Картах →</a>
         </div>
 
         <form class="form reveal" id="booking-form" novalidate>
@@ -490,7 +492,6 @@
               <option>Магнитно-лазерная терапия</option>
               <option>Иглоукалывание</option>
               <option>Лечение пяточной шпоры</option>
-              <option>Тейпирование</option>
             </select>
           </label>
           <label class="field">
@@ -528,6 +529,10 @@
     <div class="container footer__bottom">
       <p class="footer__warn">Имеются противопоказания. Необходима консультация специалиста.</p>
       <p>© <span id="year">2026</span> Кабинет здоровья доктора Горшечникова</p>
+    </div>
+    <div class="container footer__legal">
+      <p>ИП Горшечников Андрей Сергеевич</p>
+      <p>ИНН 026616663545 · ОГРНИП 321028000040639</p>
     </div>
   </footer>
 

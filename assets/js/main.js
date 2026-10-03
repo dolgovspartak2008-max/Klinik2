@@ -44,24 +44,36 @@
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
-  /* ---------- Mobile menu ---------- */
+  /* ---------- Mobile menu (отдельный полноэкранный слой) ---------- */
   const burger = document.getElementById('burger');
   const nav = document.getElementById('nav');
+  const menu = document.getElementById('mmenu');
+  const root = document.documentElement;
+  let menuTimer;
   const setMenu = (open) => {
+    clearTimeout(menuTimer);
     burger.setAttribute('aria-expanded', String(open));
-    burger.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
-    nav.classList.toggle('is-open', open);
-    body.classList.toggle('menu-open', open);
-    body.style.overflow = open ? 'hidden' : '';
+    if (open) {
+      menu.hidden = false;
+      root.classList.add('is-locked');
+      requestAnimationFrame(() => requestAnimationFrame(() => menu.classList.add('is-open')));
+      menu.querySelector('.mmenu__close').focus({ preventScroll: true });
+    } else {
+      menu.classList.remove('is-open');
+      root.classList.remove('is-locked');
+      menuTimer = setTimeout(() => { menu.hidden = true; }, reduceMotion ? 0 : 700);
+      burger.focus({ preventScroll: true });
+    }
   };
-  burger.addEventListener('click', () => setMenu(burger.getAttribute('aria-expanded') !== 'true'));
-  nav.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
-  window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && nav.classList.contains('is-open')) setMenu(false); });
+  burger.addEventListener('click', () => setMenu(true));
+  menu.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', () => setMenu(false)));
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !menu.hidden) setMenu(false); });
+  window.matchMedia('(min-width: 981px)').addEventListener('change', (e) => { if (e.matches && !menu.hidden) setMenu(false); });
 
   /* ---------- Reveal on scroll ---------- */
   const reveals = document.querySelectorAll('.reveal');
   // лёгкая «лесенка» для элементов в одной сетке
-  document.querySelectorAll('.dir-grid, .team-grid, .steps, .faq__list, .principles').forEach((grid) => {
+  document.querySelectorAll('.dir-grid, .team-grid, .faq__list, .principles').forEach((grid) => {
     [...grid.children].forEach((el, i) => el.style.setProperty('--d', `${(i % 4) * 0.08}s`));
   });
   if ('IntersectionObserver' in window && !reduceMotion) {
