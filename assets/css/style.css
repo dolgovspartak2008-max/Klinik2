@@ -586,3 +586,18 @@ html.is-locked { background: var(--navy-900); }
 
 /* Фото главного врача в блоке «О главном враче» */
 .doctor__photo img.doctor__img--xray { object-position: 48% center; }
+
+/* Окно процедуры — отдельный полноэкранный экран, сайт под ним не виден */
+.proc-modal { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; background: var(--white); }
+.proc-modal::backdrop { background: var(--white); backdrop-filter: none; }
+.proc-modal__card { left: 0; top: 0; right: 0; bottom: 0; width: 100%; height: 100%; max-height: none; border-radius: 0; box-shadow: none; transform: translateY(24px); opacity: 0; }
+.proc-modal.is-shown .proc-modal__card { transform: none; opacity: 1; }
+.proc-modal__body { display: flex; flex-direction: column; justify-content: center; padding: clamp(40px, 6vw, 90px) clamp(28px, 5vw, 80px); }
+.proc-modal__body > * { max-width: 620px; }
+@media (max-width: 980px) {
+  .proc-modal__card { display: block; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; transform: translateY(24px); }
+  .proc-modal__img { aspect-ratio: 4 / 3; }
+  .proc-modal__body { display: block; padding: 24px 20px calc(30px + env(safe-area-inset-bottom)); }
+  .proc-modal__close { position: fixed; top: calc(14px + env(safe-area-inset-top)); right: 14px; }
+}
+@media (prefers-reduced-motion: reduce) { .proc-modal__card { transform: none; transition: none; } }
