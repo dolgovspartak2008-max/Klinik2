@@ -227,105 +227,19 @@
   if (year) year.textContent = String(new Date().getFullYear());
 })();
 
-/* ---------- Процедуры: окно «Подробнее» ---------- */
+/* ---------- Процедуры: «Подробнее» открывает отдельную страницу в новой вкладке ---------- */
 (() => {
   'use strict';
-  const INFO = {
-    hijama: {
-      lead: 'Традиционная методика баночного кровопускания: на коже делают небольшие поверхностные насечки и устанавливают вакуумные банки.',
-      forWhat: ['Мышечное напряжение и боль в спине', 'В составе оздоровительных программ, например комплекса «Хиджама»'],
-      how: 'Процедуру проводит специалист одноразовыми стерильными инструментами. Перед хиджамой обязательна консультация: у методики есть противопоказания, в том числе нарушения свёртываемости крови, анемия и приём препаратов, разжижающих кровь.',
-      service: 'Хиджама'
-    },
-    massage: {
-      lead: 'Классический массаж с элементами глубокого и фасциального массажа и проработкой триггерных точек.',
-      forWhat: ['Общее мышечное напряжение и усталость', 'Боль в спине и шее от сидячей работы', 'Восстановление после физических нагрузок'],
-      how: 'Массажист прорабатывает выбранную зону и уделяет особое внимание участкам напряжения. Продолжительность зависит от зоны: от 10 минут для лица до часа для всего тела.',
-      service: 'Массаж'
-    },
-    uvt: {
-      lead: 'Аппарат направляет акустические импульсы на болезненную зону. Они улучшают кровообращение и обменные процессы в тканях и помогают уменьшить боль.',
-      forWhat: ['Пяточная шпора', 'Эпикондилит («локоть теннисиста»), тендиниты', 'Болезненные уплотнения и триггерные точки в мышцах', 'Боль в плече и колене'],
-      how: 'Насадку аппарата прикладывают к коже через гель. Ощущаются ритмичные толчки, иногда это умеренно неприятно. Обычно назначают курс с перерывами в несколько дней между сеансами.',
-      service: 'Ударно-волновая терапия'
-    },
-    vgt: {
-      lead: 'Аппаратный вакуумный массаж банками. Дозированное разрежение усиливает крово- и лимфоток и расслабляет спазмированные мышцы.',
-      forWhat: ['Спазм и напряжение мышц спины и шеи', 'Застойные явления и отёчность', 'Восстановление после физических нагрузок'],
-      how: 'Банки устанавливают на кожу, аппарат создаёт переменное разрежение. После процедуры на коже могут остаться круглые следы, они проходят за несколько дней.',
-      service: 'Вакуумно-градиентная терапия'
-    },
-    magnet: {
-      lead: 'Сочетание двух методик. Импульсное магнитное поле проникает в глубокие ткани и вызывает сокращение мышц, а лазерное излучение уменьшает воспаление, отёк и боль.',
-      forWhat: ['Боль в спине и шее, в том числе отдающая в руку или ногу', 'Боль в суставах, связках и сухожилиях', 'Мышечная слабость, восстановление после травм'],
-      how: 'Вы лежите, индуктор располагают над нужной зоной: ощущаются ритмичные подёргивания мышц. Затем насадку лазера плавно ведут над проблемным участком, чувствуется приятное тепло. Обе процедуры безболезненны, на время лазера выдают защитные очки.',
-      service: 'Магнитно-лазерная терапия'
-    },
-    iglo: {
-      lead: 'Акупунктура: тонкие стерильные иглы вводят в определённые точки тела.',
-      forWhat: ['Боль в спине и шее', 'Мышечное напряжение', 'Головная боль напряжения'],
-      how: 'Используются только одноразовые иглы. В точке может ощущаться лёгкое покалывание или распирание. Пока иглы установлены, вы спокойно лежите и отдыхаете.',
-      service: 'Иглоукалывание'
-    },
-    heel: {
-      lead: 'Для лечения применяется ударно-волновая терапия: акустические импульсы воздействуют на болезненную зону пятки, улучшают кровообращение и обменные процессы в тканях.',
-      forWhat: ['Пяточная шпора', 'Боль в пятке при ходьбе и нагрузке'],
-      how: 'Насадку аппарата прикладывают к стопе через гель, ощущаются ритмичные толчки. Обычно назначают курс из нескольких сеансов с перерывами в несколько дней. Количество процедур определяет специалист.',
-      service: 'Лечение пяточной шпоры'
-    }
-  };
-
-  const modal = document.getElementById('proc-modal');
-  if (!modal) return;
-  const root = document.documentElement;
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const img = document.getElementById('pm-img');
-  const title = document.getElementById('pm-title');
-  const price = document.getElementById('pm-price');
-  const content = document.getElementById('pm-content');
-  const book = document.getElementById('pm-book');
-  let opener = null, service = '';
-
-  const esc = (t) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-
-  const open = (card, from) => {
-    const d = INFO[card.dataset.proc];
-    if (!d) return;
-    opener = from;
-    service = d.service;
-    const src = card.querySelector('.dir-card__img img');
-    img.src = src.getAttribute('src');
-    img.alt = src.alt;
-    img.style.objectPosition = src.classList.contains('pos-top') ? 'center 30%' : '';
-    title.textContent = card.querySelector('h3').textContent;
-    price.textContent = card.querySelector('.dir-card__price').textContent;
-    content.innerHTML = `<p class="lead">${esc(d.lead)}</p><h4>Кому подходит</h4><ul>${d.forWhat.map((x) => `<li>${esc(x)}</li>`).join('')}</ul><h4>Как проходит</h4><p>${esc(d.how)}</p>`;
-    modal.querySelector('.proc-modal__body').scrollTop = 0;
-    modal.querySelector('.proc-modal__card').scrollTop = 0;
-    if (modal.showModal) modal.showModal(); else modal.setAttribute('open', '');
-    root.classList.add('is-locked');
-    requestAnimationFrame(() => requestAnimationFrame(() => modal.classList.add('is-shown')));
-  };
-  const close = (after) => {
-    modal.classList.remove('is-shown');
-    setTimeout(() => {
-      if (modal.open) modal.close();
-      root.classList.remove('is-locked');
-      if (after) after(); else if (opener) opener.focus({ preventScroll: true });
-    }, reduce ? 0 : 350);
-  };
-
   document.querySelectorAll('.dir-card[data-proc]').forEach((card) => {
-    const btn = card.querySelector('.dir-card__more');
-    btn.addEventListener('click', (e) => { e.stopPropagation(); open(card, btn); });
-    card.addEventListener('click', () => open(card, btn));
+    const link = card.querySelector('.dir-card__more');
+    if (!link) return;
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('a')) return;
+      window.open(link.href, '_blank', 'noopener');
+    });
   });
-  modal.addEventListener('cancel', (e) => { e.preventDefault(); close(); });
-  modal.addEventListener('click', (e) => { if (e.target === modal || e.target.closest('[data-pm-close]')) close(); });
-  book.addEventListener('click', (e) => {
-    e.preventDefault();
-    const sel = document.querySelector('#booking-form select[name="service"]');
-    if (sel && [...sel.options].some((o) => o.value === service)) sel.value = service;
-    close(() => document.getElementById('booking').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }));
-  });
+  /* Переход «Записаться» со страницы процедуры: подставить услугу в форму */
+  const service = new URLSearchParams(location.search).get('service');
+  const sel = document.querySelector('#booking-form select[name="service"]');
+  if (service && sel && [...sel.options].some((o) => o.value === service)) sel.value = service;
 })();
