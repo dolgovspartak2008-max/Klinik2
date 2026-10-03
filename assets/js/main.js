@@ -2,22 +2,21 @@
   'use strict';
 
   const body = document.body;
+  const root = document.documentElement;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const desktopMQ = window.matchMedia('(min-width: 981px)');
 
   /* ---------- Intro ---------- */
   const intro = document.getElementById('intro');
   let introFinished = false;
-
   const finishIntro = () => {
     if (introFinished) return;
     introFinished = true;
     intro.classList.add('is-out');
     body.classList.remove('is-loading');
-    // небольшой отступ, чтобы hero начинал анимацию вместе с раскрытием шторок
     setTimeout(() => body.classList.add('is-ready'), 250);
     setTimeout(() => intro.classList.add('is-done'), 1500);
   };
-
   if (reduceMotion) {
     intro.classList.add('is-done');
     body.classList.remove('is-loading');
@@ -33,22 +32,23 @@
     window.addEventListener('keydown', (e) => { if (e.key === 'Escape') finishIntro(); }, { once: true });
   }
 
-  /* ---------- Header state ---------- */
+  /* ---------- Header + floating button ---------- */
   const header = document.getElementById('header');
   const fab = document.querySelector('.fab');
+  const contacts = document.getElementById('contacts');
   const onScroll = () => {
     const y = window.scrollY;
     header.classList.toggle('is-scrolled', y > 40);
-    fab.classList.toggle('is-visible', y > window.innerHeight * 0.8);
+    const nearForm = contacts.getBoundingClientRect().top < window.innerHeight * 0.9;
+    fab.classList.toggle('is-visible', y > window.innerHeight * 0.8 && !nearForm);
   };
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
-  /* ---------- Mobile menu (отдельный полноэкранный слой) ---------- */
+  /* ---------- Mobile menu ---------- */
   const burger = document.getElementById('burger');
   const nav = document.getElementById('nav');
   const menu = document.getElementById('mmenu');
-  const root = document.documentElement;
   let menuTimer;
   const setMenu = (open) => {
     clearTimeout(menuTimer);
@@ -68,21 +68,17 @@
   burger.addEventListener('click', () => setMenu(true));
   menu.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', () => setMenu(false)));
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !menu.hidden) setMenu(false); });
-  window.matchMedia('(min-width: 981px)').addEventListener('change', (e) => { if (e.matches && !menu.hidden) setMenu(false); });
+  desktopMQ.addEventListener('change', (e) => { if (e.matches && !menu.hidden) setMenu(false); });
 
   /* ---------- Reveal on scroll ---------- */
   const reveals = document.querySelectorAll('.reveal');
-  // лёгкая «лесенка» для элементов в одной сетке
-  document.querySelectorAll('.dir-grid, .team-grid, .faq__list, .principles').forEach((grid) => {
+  document.querySelectorAll('.team-grid, .faq__list').forEach((grid) => {
     [...grid.children].forEach((el, i) => el.style.setProperty('--d', `${(i % 4) * 0.08}s`));
   });
   if ('IntersectionObserver' in window && !reduceMotion) {
     const io = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-in');
-          io.unobserve(entry.target);
-        }
+        if (entry.isIntersecting) { entry.target.classList.add('is-in'); io.unobserve(entry.target); }
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
     reveals.forEach((el) => io.observe(el));
@@ -103,34 +99,115 @@
     sections.forEach((s) => navIO.observe(s));
   }
 
-  /* ---------- Parallax on hero photo ---------- */
+  /* ---------- Hero photo parallax ---------- */
   const parallaxEls = document.querySelectorAll('[data-parallax]');
   if (!reduceMotion && parallaxEls.length) {
     let ticking = false;
     const update = () => {
       const y = window.scrollY;
-      parallaxEls.forEach((el) => {
-        if (y < window.innerHeight * 1.2) {
-          el.style.transform = `translateY(${y * parseFloat(el.dataset.parallax)}px)`;
-        }
-      });
+      if (y < window.innerHeight * 1.2) {
+        parallaxEls.forEach((el) => { el.style.transform = `translateY(${y * parseFloat(el.dataset.parallax)}px)`; });
+      }
       ticking = false;
     };
     window.addEventListener('scroll', () => { if (!ticking) { requestAnimationFrame(update); ticking = true; } }, { passive: true });
   }
 
-  /* ---------- Magnetic buttons ---------- */
-  if (!reduceMotion && window.matchMedia('(hover: hover)').matches) {
-    document.querySelectorAll('.magnetic').forEach((btn) => {
-      btn.addEventListener('mousemove', (e) => {
-        const r = btn.getBoundingClientRect();
-        const x = (e.clientX - r.left - r.width / 2) * 0.18;
-        const y = (e.clientY - r.top - r.height / 2) * 0.3;
-        btn.style.transform = `translate(${x}px, ${y}px)`;
-      });
-      btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+  /* ---------- Booking form helpers ---------- */
+  const form = document.getElementById('booking-form');
+  const serviceSelect = form.elements.service;
+  const setService = (name) => {
+    if ([...serviceSelect.options].some((o) => o.value === name)) serviceSelect.value = name;
+  };
+  document.querySelectorAll('[data-service-set]').forEach((el) => {
+    el.addEventListener('click', () => setService(el.dataset.serviceSet));
+  });
+
+  /* ---------- Procedures ---------- */
+  const procs = [...document.querySelectorAll('.proc')];
+  const stageImgs = [...document.querySelectorAll('.proc-stage__frame img')];
+  const counter = document.getElementById('proc-current');
+  const pad = (n) => String(n).padStart(2, '0');
+
+  const activateProc = (proc) => {
+    procs.forEach((p) => p.classList.toggle('is-active', p === proc));
+    stageImgs.forEach((img) => img.classList.toggle('is-active', img.dataset.key === proc.dataset.key));
+    counter.textContent = pad(procs.indexOf(proc) + 1);
+  };
+  activateProc(procs[0]);
+
+  procs.forEach((proc) => {
+    proc.addEventListener('mouseenter', () => { if (desktopMQ.matches) activateProc(proc); });
+    proc.addEventListener('focusin', () => { if (desktopMQ.matches) activateProc(proc); });
+    proc.addEventListener('click', (e) => {
+      if (e.target.closest('.proc__btn')) return;
+      if (desktopMQ.matches) activateProc(proc);
     });
-  }
+    proc.querySelector('.proc__btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openSheet(proc, e.currentTarget);
+    });
+  });
+
+  // точки-индикатор для мобильной карусели
+  const list = document.getElementById('proc-list');
+  const dotsWrap = document.querySelector('.procs-dots');
+  procs.forEach(() => dotsWrap.appendChild(document.createElement('i')));
+  const dots = [...dotsWrap.children];
+  const updateDots = () => {
+    const step = procs[1] ? procs[1].offsetLeft - procs[0].offsetLeft : 1;
+    const idx = Math.min(procs.length - 1, Math.max(0, Math.round(list.scrollLeft / step)));
+    dots.forEach((d, i) => d.classList.toggle('is-active', i === idx));
+  };
+  list.addEventListener('scroll', () => requestAnimationFrame(updateDots), { passive: true });
+  updateDots();
+
+  /* ---------- Procedure details sheet ---------- */
+  const sheet = document.getElementById('proc-sheet');
+  const sheetImg = document.getElementById('sheet-img');
+  const sheetTitle = document.getElementById('sheet-title');
+  const sheetPrice = document.getElementById('sheet-price');
+  const sheetContent = document.getElementById('sheet-content');
+  const sheetBook = document.getElementById('sheet-book');
+  let sheetOpener = null;
+  let currentService = '';
+
+  const openSheet = (proc, opener) => {
+    sheetOpener = opener;
+    const img = proc.querySelector('.proc__img img');
+    sheetImg.src = img.getAttribute('src');
+    sheetImg.alt = img.alt;
+    sheetImg.style.objectPosition = img.classList.contains('pos-top') ? 'center 30%' : '';
+    sheetTitle.textContent = proc.querySelector('.proc__name').textContent;
+    sheetPrice.textContent = proc.querySelector('.proc__price').textContent;
+    sheetContent.replaceChildren(proc.querySelector('.proc__details').content.cloneNode(true));
+    currentService = proc.dataset.service;
+    sheet.querySelector('.sheet__inner').scrollTop = 0;
+    sheet.querySelector('.sheet__body').scrollTop = 0;
+    if (typeof sheet.showModal === 'function') sheet.showModal(); else sheet.setAttribute('open', '');
+    root.classList.add('is-locked');
+    requestAnimationFrame(() => requestAnimationFrame(() => sheet.classList.add('is-shown')));
+  };
+  const closeSheet = (after) => {
+    sheet.classList.remove('is-shown');
+    setTimeout(() => {
+      if (sheet.open) sheet.close();
+      root.classList.remove('is-locked');
+      if (after) after(); else if (sheetOpener) sheetOpener.focus({ preventScroll: true });
+    }, reduceMotion ? 0 : 380);
+  };
+  sheet.addEventListener('cancel', (e) => { e.preventDefault(); closeSheet(); });
+  sheet.addEventListener('click', (e) => {
+    if (e.target === sheet || e.target.closest('[data-sheet-close]')) closeSheet();
+  });
+  sheetBook.addEventListener('click', (e) => {
+    e.preventDefault();
+    setService(currentService);
+    closeSheet(() => {
+      document.getElementById('booking').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' });
+      setTimeout(() => form.elements.name.focus({ preventScroll: true }), 700);
+    });
+  });
 
   /* ---------- Tabs ---------- */
   const tabs = [...document.querySelectorAll('.tab')];
@@ -157,25 +234,16 @@
     tab.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
         e.preventDefault();
-        const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length];
-        activate(next, true);
+        activate(tabs[(i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length], true);
       }
     });
   });
   const initInk = () => moveInk(tabs.find((t) => t.classList.contains('is-active')));
   initInk();
   window.addEventListener('resize', initInk);
-  document.fonts && document.fonts.ready.then(initInk);
+  if (document.fonts) document.fonts.ready.then(initInk);
 
   /* ---------- Booking form ---------- */
-  const form = document.getElementById('booking-form');
-  const serviceSelect = form.elements.service;
-
-  // кнопки «Записаться на комплекс» подставляют услугу в форму
-  document.querySelectorAll('[data-service]').forEach((btn) => {
-    btn.addEventListener('click', () => { serviceSelect.value = btn.dataset.service; });
-  });
-
   const phoneInput = form.elements.phone;
   phoneInput.addEventListener('input', () => {
     let d = phoneInput.value.replace(/\D/g, '');
@@ -204,7 +272,6 @@
     const phoneDigits = phoneInput.value.replace(/\D/g, '');
     const consent = form.elements.consent.checked;
     let ok = true;
-
     if (name.length < 2) { setError(form.elements.name, 'Укажите имя'); ok = false; } else setError(form.elements.name, '');
     if (phoneDigits.length !== 11) { setError(phoneInput, 'Укажите номер полностью'); ok = false; } else setError(phoneInput, '');
     if (!consent) { setError(form.elements.consent, 'Нужно согласие на обработку данных'); ok = false; } else setError(form.elements.consent, '');
@@ -218,7 +285,6 @@
       `Услуга: ${serviceSelect.value}`,
       comment ? `Комментарий: ${comment}` : ''
     ].filter(Boolean).join('\n');
-
     window.open(`https://wa.me/79930440619?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
   });
 
