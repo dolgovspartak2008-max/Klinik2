@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Кабинет здоровья доктора Горшечникова — Салават</title>
-  <meta name="description" content="Лечение и восстановление спины и суставов в Салавате: массаж, хиджама, ударно-волновая, вакуумно-градиентная и магнитно-лазерная терапия, иглоукалывание. ул. Юлаева, 29а, Дом Быта, 3 этаж." />
+  <meta name="description" content="Лечение и восстановление опорно-двигательного аппарата в Салавате: массаж, физиотерапия, хиджама, ударно-волновая и магнитно-лазерная терапия. ул. Юлаева, 29а, Дом Быта, 3 этаж." />
   <meta name="theme-color" content="#0c1f33" />
   <link rel="canonical" href="/" />
   <meta property="og:type" content="website" />
@@ -15,7 +15,7 @@
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="preload" as="image" href="/assets/img/doctor.webp" />
   <link rel="stylesheet" href="/assets/css/style.css" />
 </head>
@@ -43,27 +43,38 @@
   <!-- ============ HEADER ============ -->
   <header class="header" id="header">
     <div class="container header__inner">
-      <a href="#top" class="logo" aria-label="Кабинет здоровья доктора Горшечникова, на главную">
+      <a href="#top" class="logo" aria-label="Кабинет здоровья доктора Горшечникова — на главную">
         <svg class="logo__mark" viewBox="0 0 124 100" fill="none" aria-hidden="true">
           <path d="M68 28.1 A34 34 0 1 0 68 71.9 L68 54 L53 54" /><path d="M62 86 L87 14 L112 86" /><path d="M73 62 L101 62" />
         </svg>
         <span class="logo__text"><b>Кабинет здоровья</b><small>доктора Горшечникова</small></span>
       </a>
       <nav class="nav" id="nav" aria-label="Основная навигация">
-        <a href="#procedures">Процедуры</a>
+        <a href="#directions">Направления</a>
         <a href="#prices">Цены</a>
-        <a href="#team">Специалисты</a>
+        <a href="#doctor">О враче</a>
+        <a href="#team">Команда</a>
         <a href="#faq">Вопросы</a>
         <a href="#contacts">Контакты</a>
       </nav>
-      <a class="header__phone" href="tel:+79930440619">+7 993 044-06-19</a>
-      <a href="#booking" class="btn btn--line btn--sm header__cta">Записаться</a>
+      <a class="header__phone" href="tel:+79930440619">
+        <span>+7 993 044-06-19</span>
+        <small>Салават, ул. Юлаева, 29а</small>
+      </a>
+      <a href="#booking" class="btn btn--gold btn--sm header__cta">Записаться</a>
       <button class="burger" id="burger" aria-label="Открыть меню" aria-expanded="false" aria-controls="mmenu"><span></span><span></span></button>
     </div>
   </header>
 
-  <!-- ============ MOBILE MENU ============ -->
+  <!-- ============ MOBILE MENU (отдельный полноэкранный слой) ============ -->
   <div class="mmenu" id="mmenu" role="dialog" aria-modal="true" aria-label="Меню" hidden>
+    <div class="mmenu__bg" aria-hidden="true">
+      <div class="hero__glow hero__glow--1"></div>
+      <div class="hero__grid"></div>
+      <svg class="mmenu__watermark" viewBox="0 0 124 100" fill="none">
+        <path d="M68 28.1 A34 34 0 1 0 68 71.9 L68 54 L53 54" /><path d="M62 86 L87 14 L112 86" /><path d="M73 62 L101 62" />
+      </svg>
+    </div>
     <div class="mmenu__top">
       <a href="#top" class="logo logo--light" data-close>
         <svg class="logo__mark" viewBox="0 0 124 100" fill="none" aria-hidden="true">
@@ -76,20 +87,26 @@
 
     <div class="mmenu__body">
       <nav class="mmenu__nav" aria-label="Меню">
-        <a href="#procedures" data-close>Процедуры</a>
-        <a href="#prices" data-close>Цены</a>
-        <a href="#team" data-close>Специалисты</a>
-        <a href="#faq" data-close>Вопросы</a>
-        <a href="#contacts" data-close>Контакты</a>
+        <a href="#directions" data-close><i>01</i>Направления</a>
+        <a href="#prices" data-close><i>02</i>Цены</a>
+        <a href="#doctor" data-close><i>03</i>О враче</a>
+        <a href="#team" data-close><i>04</i>Команда</a>
+        <a href="#faq" data-close><i>05</i>Вопросы</a>
+        <a href="#contacts" data-close><i>06</i>Контакты</a>
       </nav>
+
+      <a href="#doctor" class="mmenu__doctor" data-close>
+        <img src="/assets/img/doctor.webp" alt="" width="1200" height="1617" loading="lazy" />
+        <span><small>Главный врач</small><b>Андрей Горшечников</b><em>Физиотерапевт · приём по записи</em></span>
+      </a>
 
       <div class="mmenu__contacts">
         <a href="tel:+79930440619" class="mmenu__phone">+7 993 044-06-19</a>
-        <p>Салават, ул. Юлаева, 29а · Дом Быта, 3 этаж</p>
+        <p>Салават, ул. Юлаева, 29а<br />Дом Быта, 3 этаж</p>
       </div>
 
       <div class="mmenu__actions">
-        <a href="#booking" class="btn btn--gold btn--lg btn--block" data-close>Записаться на приём</a>
+        <a href="#booking" class="btn btn--gold btn--lg btn--block" data-close>Записаться на приём <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         <a href="https://wa.me/79930440619" class="btn btn--ghost btn--lg btn--block" target="_blank" rel="noopener">Написать в WhatsApp</a>
       </div>
     </div>
@@ -98,209 +115,137 @@
   <main id="main">
     <!-- ============ HERO ============ -->
     <section class="hero" id="top">
+      <div class="hero__bg" aria-hidden="true">
+        <div class="hero__glow hero__glow--1"></div>
+        <div class="hero__glow hero__glow--2"></div>
+        <div class="hero__grid"></div>
+      </div>
       <div class="container hero__inner">
         <div class="hero__content">
-          <p class="label label--light hero-in">Салават · ул. Юлаева, 29а</p>
+          <p class="eyebrow hero-in"><span class="dot"></span>Центр здоровья и восстановления · Салават</p>
           <h1 class="hero__title">
             <span class="hero-line"><span>Лечение и</span></span>
             <span class="hero-line"><span><em>восстановление</em></span></span>
             <span class="hero-line"><span>спины и суставов</span></span>
           </h1>
-          <p class="hero__lead hero-in">Массаж, физиотерапия и комплексные программы под наблюдением специалиста. План лечения составляем после осмотра.</p>
+          <p class="hero__lead hero-in">Массаж, физиотерапия и комплексные программы для опорно-двигательного аппарата — под наблюдением специалиста и с понятным планом лечения.</p>
           <div class="hero__actions hero-in">
-            <a href="#booking" class="btn btn--gold btn--lg">Записаться на консультацию</a>
+            <a href="#booking" class="btn btn--gold btn--lg magnetic">Записаться на консультацию <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <a href="#prices" class="btn btn--ghost btn--lg">Смотреть цены</a>
           </div>
-          <dl class="hero__facts hero-in">
-            <div><dt>Главный врач</dt><dd>Андрей Горшечников</dd></div>
-            <div><dt>Команда</dt><dd>5 специалистов</dd></div>
-            <div><dt>Процедуры</dt><dd>от 500 ₽</dd></div>
-          </dl>
         </div>
 
         <div class="hero__visual">
-          <figure class="hero__photo">
-            <div class="hero__photo-frame" data-parallax="0.05">
+          <div class="hero__arch">
+            <div class="hero__arch-ring" aria-hidden="true"></div>
+            <figure class="hero__photo" data-parallax="0.06">
               <img src="/assets/img/doctor.webp" width="1200" height="1617" alt="Главный врач Андрей Горшечников в кабинете" fetchpriority="high" decoding="async" />
+            </figure>
+            <div class="float-card float-card--doctor">
+              <span class="float-card__label">Главный врач</span>
+              <b>Андрей Горшечников</b>
+              <small>Физиотерапевт</small>
             </div>
-            <figcaption>Андрей Горшечников<span>главный врач, физиотерапевт</span></figcaption>
-          </figure>
+            <div class="float-card float-card--price">
+              <span class="float-card__num">от 500 ₽</span>
+              <small>стоимость процедур</small>
+            </div>
+            <div class="float-card float-card--team">
+              <div class="avatars" aria-hidden="true">
+                <img src="/assets/img/isaev.webp" alt="" width="40" height="40" />
+                <img src="/assets/img/nazyrov.webp" alt="" width="40" height="40" />
+                <img src="/assets/img/gavrilov.webp" alt="" width="40" height="40" />
+                <img src="/assets/img/yunalov.webp" alt="" width="40" height="40" />
+              </div>
+              <small><b>5 специалистов</b> в команде</small>
+            </div>
+          </div>
         </div>
       </div>
+      <a class="hero__address hero-in" href="#contacts">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+        ул. Юлаева, 29а · Дом Быта, 3 этаж
+      </a>
     </section>
 
-    <!-- ============ PROCEDURES ============ -->
-    <section class="section procs-section" id="procedures">
+    <!-- ============ MARQUEE ============ -->
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__track">
+        <span>Массаж</span><i>✦</i><span>Хиджама</span><i>✦</i><span>Ударно-волновая терапия</span><i>✦</i><span>Иглоукалывание</span><i>✦</i><span>Вакуумно-градиентная терапия</span><i>✦</i><span>Магнитно-лазерная терапия</span><i>✦</i><span>Лечение пяточной шпоры</span><i>✦</i>
+        <span>Массаж</span><i>✦</i><span>Хиджама</span><i>✦</i><span>Ударно-волновая терапия</span><i>✦</i><span>Иглоукалывание</span><i>✦</i><span>Вакуумно-градиентная терапия</span><i>✦</i><span>Магнитно-лазерная терапия</span><i>✦</i><span>Лечение пяточной шпоры</span><i>✦</i>
+      </div>
+    </div>
+
+    <!-- ============ DIRECTIONS ============ -->
+    <section class="section" id="directions">
       <div class="container">
-        <header class="section__head reveal">
-          <p class="label">Процедуры</p>
-          <h2 class="section__title">Что мы делаем</h2>
-          <p class="section__lead">Каждую процедуру назначает специалист после осмотра. Нажмите «Подробнее», чтобы узнать, как она проходит и кому подходит.</p>
-        </header>
-
-        <div class="procs">
-          <div class="proc-stage" aria-hidden="true">
-            <div class="proc-stage__frame">
-              <img data-key="hijama" src="/assets/img/hijama-hd.webp" alt="" loading="lazy" width="1200" height="798" />
-              <img data-key="uvt" src="/assets/img/shockwave-device.webp" alt="" loading="lazy" width="960" height="1280" />
-              <img data-key="vgt" src="/assets/img/vacuum-hd.webp" alt="" loading="lazy" width="1000" height="1333" />
-              <img data-key="magnet" src="/assets/img/magnet-hd.webp" alt="" loading="lazy" width="1000" height="1333" />
-              <img data-key="iglo" src="/assets/img/acupuncture.webp" alt="" loading="lazy" width="1200" height="798" />
-              <img data-key="heel" src="/assets/img/heel-spur.webp" alt="" loading="lazy" width="1200" height="798" />
-              <img data-key="massage" src="/assets/img/massage.webp" alt="" loading="lazy" width="520" height="342" />
-            </div>
-            <p class="proc-stage__count"><span id="proc-current">01</span> / 07</p>
+        <div class="section__head reveal">
+          <span class="section__num">01</span>
+          <div>
+            <p class="eyebrow">Направления лечения</p>
+            <h2 class="section__title">Методики, которые <em>работают в комплексе</em></h2>
           </div>
-
-          <div class="proc-list" id="proc-list">
-
-            <!-- Хиджама -->
-            <article class="proc" data-key="hijama" data-service="Хиджама">
-              <figure class="proc__img"><img src="/assets/img/hijama-hd.webp" alt="Хиджама: вакуумные банки на спине" loading="lazy" width="1200" height="798" /></figure>
-              <div class="proc__row">
-                <span class="proc__num">01</span>
-                <h3 class="proc__name">Хиджама</h3>
-                <span class="proc__price">2 500 ₽</span>
-              </div>
-              <div class="proc__extra"><div class="proc__extra-inner">
-                <p class="proc__lead">Традиционное баночное кровопускание: небольшие поверхностные насечки и вакуумные банки.</p>
-                <button class="proc__btn" type="button">Подробнее</button>
-              </div></div>
-              <template class="proc__details">
-                <p class="sheet__lead">Традиционная методика баночного кровопускания. На коже делают небольшие поверхностные насечки и устанавливают вакуумные банки.</p>
-                <h4>Кому подходит</h4>
-                <ul><li>Мышечное напряжение и боль в спине</li><li>В составе оздоровительных программ, например комплекса «Хиджама»</li></ul>
-                <h4>Как проходит</h4>
-                <p>Процедуру проводит специалист одноразовыми стерильными инструментами. Перед хиджамой обязательна консультация: у методики есть противопоказания, в том числе нарушения свёртываемости крови, анемия и приём препаратов, разжижающих кровь.</p>
-              </template>
-            </article>
-
-            <!-- УВТ -->
-            <article class="proc" data-key="uvt" data-service="Ударно-волновая терапия">
-              <figure class="proc__img"><img src="/assets/img/shockwave-device.webp" alt="Аппарат ударно-волновой терапии" loading="lazy" width="960" height="1280" class="pos-top" /></figure>
-              <div class="proc__row">
-                <span class="proc__num">02</span>
-                <h3 class="proc__name">Ударно-волновая терапия</h3>
-                <span class="proc__price">от 1 000 ₽</span>
-              </div>
-              <div class="proc__extra"><div class="proc__extra-inner">
-                <p class="proc__lead">Акустические импульсы на болезненную зону улучшают кровоток и обмен веществ в тканях.</p>
-                <button class="proc__btn" type="button">Подробнее</button>
-              </div></div>
-              <template class="proc__details">
-                <p class="sheet__lead">Аппарат направляет акустические импульсы на болезненную зону. Они улучшают кровообращение и обменные процессы в тканях и помогают уменьшить боль.</p>
-                <h4>Кому подходит</h4>
-                <ul><li>Пяточная шпора</li><li>Эпикондилит («локоть теннисиста»), тендиниты</li><li>Болезненные уплотнения и триггерные точки в мышцах</li><li>Боль в плече и колене</li></ul>
-                <h4>Как проходит</h4>
-                <p>Насадку аппарата прикладывают к коже через гель. Ощущаются ритмичные толчки, иногда это бывает умеренно неприятно. Обычно назначают курс с перерывами в несколько дней между сеансами.</p>
-              </template>
-            </article>
-
-            <!-- ВГТ -->
-            <article class="proc" data-key="vgt" data-service="Вакуумно-градиентная терапия">
-              <figure class="proc__img"><img src="/assets/img/vacuum-hd.webp" alt="Вакуумно-градиентная терапия" loading="lazy" width="1000" height="1333" /></figure>
-              <div class="proc__row">
-                <span class="proc__num">03</span>
-                <h3 class="proc__name">Вакуумно-градиентная терапия</h3>
-                <span class="proc__price">1 500 ₽</span>
-              </div>
-              <div class="proc__extra"><div class="proc__extra-inner">
-                <p class="proc__lead">Аппаратный вакуумный массаж банками: расслабляет мышцы и усиливает крово- и лимфоток.</p>
-                <button class="proc__btn" type="button">Подробнее</button>
-              </div></div>
-              <template class="proc__details">
-                <p class="sheet__lead">Аппаратный вакуумный массаж банками. Дозированное разрежение усиливает крово- и лимфоток и расслабляет спазмированные мышцы.</p>
-                <h4>Кому подходит</h4>
-                <ul><li>Спазм и напряжение мышц спины и шеи</li><li>Застойные явления и отёчность</li><li>Восстановление после физических нагрузок</li></ul>
-                <h4>Как проходит</h4>
-                <p>Банки устанавливают на кожу, аппарат создаёт переменное разрежение. После процедуры на коже могут остаться круглые следы, они проходят за несколько дней.</p>
-              </template>
-            </article>
-
-            <!-- Магнит + лазер -->
-            <article class="proc" data-key="magnet" data-service="Магнитно-лазерная терапия">
-              <figure class="proc__img"><img src="/assets/img/magnet-hd.webp" alt="Магнитно-лазерная терапия" loading="lazy" width="1000" height="1333" /></figure>
-              <div class="proc__row">
-                <span class="proc__num">04</span>
-                <h3 class="proc__name">Магнитно-лазерная терапия</h3>
-                <span class="proc__price">от 1 000 ₽</span>
-              </div>
-              <div class="proc__extra"><div class="proc__extra-inner">
-                <p class="proc__lead">Импульсное магнитное поле и лазерное излучение воздействуют на глубокие ткани и уменьшают боль.</p>
-                <button class="proc__btn" type="button">Подробнее</button>
-              </div></div>
-              <template class="proc__details">
-                <p class="sheet__lead">Сочетание двух методик. Импульсное магнитное поле проникает в глубокие ткани и вызывает сокращение мышц, а лазерное излучение уменьшает воспаление, отёк и боль.</p>
-                <h4>Кому подходит</h4>
-                <ul><li>Боль в спине и шее, в том числе отдающая в руку или ногу</li><li>Боль в суставах, связках и сухожилиях</li><li>Мышечная слабость, восстановление после травм</li></ul>
-                <h4>Как проходит</h4>
-                <p>Вы лежите, индуктор располагают над нужной зоной: ощущаются ритмичные подёргивания мышц. Затем насадку лазера плавно ведут над проблемным участком, чувствуется приятное тепло. Обе процедуры безболезненны, на время лазера выдают защитные очки.</p>
-              </template>
-            </article>
-
-            <!-- Иглоукалывание -->
-            <article class="proc" data-key="iglo" data-service="Иглоукалывание">
-              <figure class="proc__img"><img src="/assets/img/acupuncture.webp" alt="Иглоукалывание" loading="lazy" width="1200" height="798" /></figure>
-              <div class="proc__row">
-                <span class="proc__num">05</span>
-                <h3 class="proc__name">Иглоукалывание</h3>
-                <span class="proc__price">1 500 ₽</span>
-              </div>
-              <div class="proc__extra"><div class="proc__extra-inner">
-                <p class="proc__lead">Акупунктура: тонкие стерильные иглы вводят в определённые точки тела.</p>
-                <button class="proc__btn" type="button">Подробнее</button>
-              </div></div>
-              <template class="proc__details">
-                <p class="sheet__lead">Акупунктура: тонкие стерильные иглы вводят в определённые точки тела.</p>
-                <h4>Кому подходит</h4>
-                <ul><li>Боль в спине и шее</li><li>Мышечное напряжение</li><li>Головная боль напряжения</li></ul>
-                <h4>Как проходит</h4>
-                <p>Используются только одноразовые иглы. В точке может ощущаться лёгкое покалывание или распирание. Пока иглы установлены, вы спокойно лежите и отдыхаете.</p>
-              </template>
-            </article>
-
-            <!-- Пяточная шпора -->
-            <article class="proc" data-key="heel" data-service="Лечение пяточной шпоры">
-              <figure class="proc__img"><img src="/assets/img/heel-spur.webp" alt="Лечение пяточной шпоры" loading="lazy" width="1200" height="798" /></figure>
-              <div class="proc__row">
-                <span class="proc__num">06</span>
-                <h3 class="proc__name">Лечение пяточной шпоры</h3>
-                <span class="proc__price">от 1 000 ₽</span>
-              </div>
-              <div class="proc__extra"><div class="proc__extra-inner">
-                <p class="proc__lead">Курс ударно-волновой терапии на зону боли в пятке, подобранный после осмотра стопы.</p>
-                <button class="proc__btn" type="button">Подробнее</button>
-              </div></div>
-              <template class="proc__details">
-                <p class="sheet__lead">Для лечения применяется ударно-волновая терапия: акустические импульсы воздействуют на болезненную зону пятки, улучшают кровообращение и обменные процессы в тканях.</p>
-                <h4>Кому подходит</h4>
-                <ul><li>Пяточная шпора</li><li>Боль в пятке при ходьбе и нагрузке</li></ul>
-                <h4>Как проходит</h4>
-                <p>Насадку аппарата прикладывают к стопе через гель, ощущаются ритмичные толчки. Обычно назначают курс из нескольких сеансов с перерывами в несколько дней. Количество процедур определяет специалист.</p>
-              </template>
-            </article>
-            <!-- Массаж -->
-            <article class="proc" data-key="massage" data-service="Массаж">
-              <figure class="proc__img"><img src="/assets/img/massage.webp" alt="Массаж спины" loading="lazy" width="520" height="342" /></figure>
-              <div class="proc__row">
-                <span class="proc__num">07</span>
-                <h3 class="proc__name">Массаж</h3>
-                <span class="proc__price">от 500 ₽</span>
-              </div>
-              <div class="proc__extra"><div class="proc__extra-inner">
-                <p class="proc__lead">Классический массаж с элементами глубокого и фасциального, с проработкой триггерных точек.</p>
-                <button class="proc__btn" type="button">Подробнее</button>
-              </div></div>
-              <template class="proc__details">
-                <p class="sheet__lead">Классический массаж с элементами глубокого и фасциального массажа и проработкой триггерных точек.</p>
-                <h4>Кому подходит</h4>
-                <ul><li>Общее мышечное напряжение и усталость</li><li>Боль в спине и шее от сидячей работы</li><li>Восстановление после физических нагрузок</li></ul>
-                <h4>Как проходит</h4>
-                <p>Массажист прорабатывает выбранную зону и уделяет особое внимание участкам напряжения. Продолжительность зависит от зоны: от 10 минут для лица до часа для всего тела.</p>
-              </template>
-            </article>
-          </div>
+          <p class="section__lead">Каждую процедуру подбирает специалист после осмотра — с учётом жалоб, состояния и противопоказаний.</p>
         </div>
-        <div class="procs-dots" aria-hidden="true"></div>
+
+        <div class="dir-grid">
+          <article class="dir-card reveal">
+            <div class="dir-card__img"><img src="/assets/img/hijama-hd.webp" alt="Процедура хиджамы: вакуумные банки на спине" loading="lazy" width="1200" height="798" /></div>
+            <div class="dir-card__body">
+              <h3>Хиджама</h3>
+              <p>Вакуумные банки с насечками — отдельно или в составе комплекса.</p>
+              <span class="dir-card__price">2 500 ₽</span>
+            </div>
+          </article>
+          <article class="dir-card reveal">
+            <div class="dir-card__img"><img src="/assets/img/massage.webp" alt="Массаж спины" loading="lazy" width="520" height="346" /></div>
+            <div class="dir-card__body">
+              <h3>Массаж</h3>
+              <p>Классический, антицеллюлитный, массаж отдельных зон и всего тела.</p>
+              <span class="dir-card__price">от 500 ₽</span>
+            </div>
+          </article>
+          <article class="dir-card reveal">
+            <div class="dir-card__img"><img src="/assets/img/shockwave-device.webp" alt="Аппарат ударно-волновой терапии" loading="lazy" width="960" height="1280" class="pos-top" /></div>
+            <div class="dir-card__body">
+              <h3>Ударно-волновая терапия</h3>
+              <p>Аппаратное воздействие акустическими волнами на проблемную зону.</p>
+              <span class="dir-card__price">от 1 000 ₽</span>
+            </div>
+          </article>
+          <article class="dir-card reveal">
+            <div class="dir-card__img"><img src="/assets/img/vacuum-hd.webp" alt="Вакуумно-градиентная терапия" loading="lazy" width="1000" height="1333" /></div>
+            <div class="dir-card__body">
+              <h3>Вакуумно-градиентная терапия</h3>
+              <p>Аппаратный вакуумный массаж для мышц и мягких тканей.</p>
+              <span class="dir-card__price">1 500 ₽</span>
+            </div>
+          </article>
+          <article class="dir-card reveal">
+            <div class="dir-card__img"><img src="/assets/img/magnet-hd.webp" alt="Магнитно-импульсная и лазерная терапия" loading="lazy" width="1000" height="1333" /></div>
+            <div class="dir-card__body">
+              <h3>Магнитно-лазерная терапия</h3>
+              <p>Физиотерапия магнитным полем и лазерным излучением.</p>
+              <span class="dir-card__price">от 1 000 ₽</span>
+            </div>
+          </article>
+          <article class="dir-card reveal">
+            <div class="dir-card__img"><img src="/assets/img/acupuncture.webp" alt="Иглоукалывание" loading="lazy" width="1200" height="798" /></div>
+            <div class="dir-card__body">
+              <h3>Иглоукалывание</h3>
+              <p>Рефлексотерапия — в том числе в сочетании с лазером.</p>
+              <span class="dir-card__price">1 500 ₽</span>
+            </div>
+          </article>
+          <article class="dir-card reveal">
+            <div class="dir-card__img"><img src="/assets/img/heel-spur.webp" alt="Ударно-волновое лечение пяточной шпоры" loading="lazy" width="1200" height="798" /></div>
+            <div class="dir-card__body">
+              <h3>Лечение пяточной шпоры</h3>
+              <p>Курс процедур, подобранный специалистом после осмотра стопы.</p>
+              <span class="dir-card__price">от 1 000 ₽</span>
+            </div>
+          </article>
+        </div>
       </div>
     </section>
 
@@ -308,16 +253,21 @@
     <section class="promo-wrap" id="promo">
       <div class="container">
         <div class="promo reveal">
+          <div class="promo__content">
+            <p class="eyebrow eyebrow--light">Специальное предложение</p>
+            <h2>Первичная консультация <em>— бесплатно</em></h2>
+            <p class="promo__lead">Приходите на первый визит: специалист выслушает жалобы, оценит состояние и предложит план лечения.</p>
+            <ul class="checklist">
+              <li>Консультация специалиста</li>
+              <li>Первичная оценка состояния</li>
+              <li>Рекомендации по лечению</li>
+            </ul>
+            <p class="promo__note">Предложение действует для новых пациентов. Подробности уточняйте по телефону.</p>
+          </div>
           <div class="promo__visual" aria-hidden="true">
             <img src="/assets/img/diagnostics-hd.webp" alt="" loading="lazy" width="1600" height="1064" />
           </div>
-          <div class="promo__content">
-            <p class="label label--light">Для новых пациентов</p>
-            <h2>Первичная консультация бесплатно</h2>
-            <p class="promo__lead">На первом визите специалист выслушает жалобы, оценит состояние и предложит план лечения.</p>
-            <a href="#booking" class="btn btn--gold btn--lg" data-service-set="Первичная консультация">Записаться</a>
-            <p class="promo__note">Подробности уточняйте по телефону.</p>
-          </div>
+          <a href="#booking" class="btn btn--gold btn--lg promo__btn magnetic">Записаться бесплатно <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         </div>
       </div>
     </section>
@@ -325,11 +275,14 @@
     <!-- ============ PRICES ============ -->
     <section class="section" id="prices">
       <div class="container">
-        <header class="section__head reveal">
-          <p class="label">Стоимость</p>
-          <h2 class="section__title">Услуги и цены</h2>
-          <p class="section__lead">Программу и количество сеансов определяет специалист на консультации.</p>
-        </header>
+        <div class="section__head reveal">
+          <span class="section__num">02</span>
+          <div>
+            <p class="eyebrow">Услуги и цены</p>
+            <h2 class="section__title">Прозрачные цены <em>без сюрпризов</em></h2>
+          </div>
+          <p class="section__lead">Итоговую программу и количество сеансов определяет специалист на консультации.</p>
+        </div>
 
         <div class="tabs reveal" role="tablist" aria-label="Категории услуг">
           <button role="tab" aria-selected="true" aria-controls="tab-massage" id="t-massage" class="tab is-active">Массаж</button>
@@ -368,27 +321,29 @@
           <div class="tab-panel" role="tabpanel" id="tab-complex" aria-labelledby="t-complex" hidden>
             <div class="complex-grid">
               <article class="complex">
-                <h3>Комплекс «Хиджама»</h3>
-                <div class="complex__prices">
-                  <p><span>Всё тело</span><b>4 500 ₽</b></p>
-                  <p><span>Спина, руки</span><b>4 000 ₽</b></p>
+                <div class="complex__head">
+                  <h3>Комплекс «Хиджама»</h3>
+                  <div class="complex__prices">
+                    <span><small>всё тело</small>4 500 ₽</span>
+                    <span><small>спина, руки</small>4 000 ₽</span>
+                  </div>
                 </div>
                 <ul class="complex__list">
                   <li>Массаж на всё тело</li><li>Вакуумный массаж</li><li>Перкуссионный массаж</li><li>Хиджама</li>
-                  <li>Магнит и лазер</li><li>Ударно-волновая терапия</li><li>Иглоукалывание</li><li>Мануальная терапия</li>
+                  <li>Магнит + лазер</li><li>Ударно-волновая терапия</li><li>Иглоукалывание</li><li>Мануальная терапия</li>
                 </ul>
-                <a href="#booking" class="btn btn--line-dark btn--sm" data-service-set="Комплекс «Хиджама»">Записаться</a>
+                <a href="#booking" class="btn btn--dark btn--sm" data-service="Комплекс «Хиджама»">Записаться на комплекс</a>
               </article>
               <article class="complex complex--dark">
-                <h3>Лечебный комплекс</h3>
-                <div class="complex__prices">
-                  <p><span>За сеанс</span><b>3 000 ₽</b></p>
+                <div class="complex__head">
+                  <h3>Лечебный комплекс</h3>
+                  <div class="complex__prices"><span><small>за сеанс</small>3 000 ₽</span></div>
                 </div>
                 <ul class="complex__list">
                   <li>Магнит</li><li>Лазер</li><li>Ударно-волновая терапия</li><li>Вакуумный массаж</li>
                   <li>Перкуссионный массаж</li><li>Мануальная терапия</li><li>Иглоукалывание</li>
                 </ul>
-                <a href="#booking" class="btn btn--gold btn--sm" data-service-set="Лечебный комплекс">Записаться</a>
+                <a href="#booking" class="btn btn--gold btn--sm" data-service="Лечебный комплекс">Записаться на комплекс</a>
               </article>
             </div>
           </div>
@@ -396,49 +351,65 @@
       </div>
     </section>
 
-    <!-- ============ TEAM ============ -->
-    <section class="section section--sand" id="team">
-      <div class="container">
-        <header class="section__head reveal">
-          <p class="label">Специалисты</p>
-          <h2 class="section__title">Команда кабинета</h2>
-          <p class="section__lead">Физиотерапевты и массажисты работают под руководством главного врача.</p>
-        </header>
-
-        <div class="team">
-          <article class="lead-doc reveal" id="doctor">
-            <div class="lead-doc__photo"><img src="/assets/img/doctor.webp" alt="Андрей Горшечников, главный врач" loading="lazy" width="1200" height="1617" /></div>
-            <div class="lead-doc__body">
-              <p class="label">Главный врач</p>
-              <h3>Андрей Горшечников</h3>
-              <p class="lead-doc__role">Физиотерапевт</p>
-              <p class="lead-doc__text">Проводит консультации, составляет план лечения и подбирает процедуры для каждого пациента. Специалисты кабинета ведут курс по этому плану.</p>
-              <a href="#booking" class="btn btn--line-dark btn--sm">Записаться к врачу</a>
+    <!-- ============ DOCTOR ============ -->
+    <section class="section section--sand" id="doctor">
+      <div class="container doctor">
+        <div class="doctor__photo reveal">
+          <img src="/assets/img/doctor.webp" alt="Андрей Горшечников, главный врач" loading="lazy" width="1200" height="1617" />
+          <div class="doctor__sign">Андрей Горшечников</div>
+        </div>
+        <div class="doctor__content">
+          <div class="section__head section__head--left reveal">
+            <span class="section__num">03</span>
+            <div>
+              <p class="eyebrow">О главном враче</p>
+              <h2 class="section__title">Андрей <em>Горшечников</em></h2>
             </div>
-          </article>
-
-          <div class="team-grid">
-            <article class="member reveal">
-              <div class="member__photo"><img src="/assets/img/isaev.webp" alt="Исаев Михаил Леонидович" loading="lazy" width="900" height="1125" /></div>
-              <h3>Исаев Михаил Леонидович</h3>
-              <p>Физиотерапевт, массажист</p>
-            </article>
-            <article class="member reveal">
-              <div class="member__photo"><img src="/assets/img/nazyrov.webp" alt="Назыров Радик Рустамович" loading="lazy" width="900" height="1125" /></div>
-              <h3>Назыров Радик Рустамович</h3>
-              <p>Физиотерапевт, массажист</p>
-            </article>
-            <article class="member reveal">
-              <div class="member__photo"><img src="/assets/img/gavrilov.webp" alt="Гаврилов Никита Юрьевич" loading="lazy" width="900" height="1125" /></div>
-              <h3>Гаврилов Никита Юрьевич</h3>
-              <p>Физиотерапевт, массажист</p>
-            </article>
-            <article class="member reveal">
-              <div class="member__photo"><img src="/assets/img/yunalov.webp" alt="Юналов Динар Ильдарович" loading="lazy" width="900" height="1125" /></div>
-              <h3>Юналов Динар Ильдарович</h3>
-              <p>Массажист</p>
-            </article>
           </div>
+          <p class="doctor__role reveal">Главный врач · Физиотерапевт</p>
+          <p class="doctor__text reveal">Кабинет здоровья создан, чтобы пациент получал не разовую процедуру, а продуманный путь к восстановлению: от консультации и осмотра до курса процедур и рекомендаций на каждый день.</p>
+          <div class="principles">
+            <div class="principle reveal"><span>01</span><div><b>Сначала осмотр</b><p>Процедуры назначаются после консультации, а не «по прайсу».</p></div></div>
+            <div class="principle reveal"><span>02</span><div><b>Комплексный подход</b><p>Массаж, физиотерапия и аппаратные методики сочетаются в одной программе.</p></div></div>
+            <div class="principle reveal"><span>03</span><div><b>Контроль результата</b><p>Специалист отслеживает самочувствие и корректирует план по ходу курса.</p></div></div>
+          </div>
+          <a href="#booking" class="btn btn--dark btn--lg reveal">Записаться к врачу <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TEAM ============ -->
+    <section class="section" id="team">
+      <div class="container">
+        <div class="section__head reveal">
+          <span class="section__num">04</span>
+          <div>
+            <p class="eyebrow">Наша команда</p>
+            <h2 class="section__title">Специалисты, <em>которым доверяют</em></h2>
+          </div>
+          <p class="section__lead">Физиотерапевты и массажисты кабинета работают в единой системе под руководством главного врача.</p>
+        </div>
+        <div class="team-grid">
+          <article class="member reveal">
+            <div class="member__photo"><img src="/assets/img/doctor.webp" alt="Горшечников Андрей" loading="lazy" width="1200" height="1617" /></div>
+            <div class="member__body"><h3>Горшечников Андрей</h3><p>Главный врач, физиотерапевт</p></div>
+          </article>
+          <article class="member reveal">
+            <div class="member__photo"><img src="/assets/img/isaev.webp" alt="Исаев Михаил Леонидович" loading="lazy" width="900" height="1125" /></div>
+            <div class="member__body"><h3>Исаев Михаил Леонидович</h3><p>Физиотерапевт, массажист</p></div>
+          </article>
+          <article class="member reveal">
+            <div class="member__photo"><img src="/assets/img/nazyrov.webp" alt="Назыров Радик Рустамович" loading="lazy" width="900" height="1125" /></div>
+            <div class="member__body"><h3>Назыров Радик Рустамович</h3><p>Физиотерапевт, массажист</p></div>
+          </article>
+          <article class="member reveal">
+            <div class="member__photo"><img src="/assets/img/gavrilov.webp" alt="Гаврилов Никита Юрьевич" loading="lazy" width="900" height="1125" /></div>
+            <div class="member__body"><h3>Гаврилов Никита Юрьевич</h3><p>Физиотерапевт, массажист</p></div>
+          </article>
+          <article class="member reveal">
+            <div class="member__photo"><img src="/assets/img/yunalov.webp" alt="Юналов Динар Ильдарович" loading="lazy" width="900" height="1125" /></div>
+            <div class="member__body"><h3>Юналов Динар Ильдарович</h3><p>Массажист</p></div>
+          </article>
         </div>
       </div>
     </section>
@@ -446,26 +417,29 @@
     <!-- ============ FAQ ============ -->
     <section class="section" id="faq">
       <div class="container faq">
-        <header class="section__head section__head--left reveal">
-          <p class="label">Вопросы</p>
-          <h2 class="section__title">Частые вопросы</h2>
-        </header>
+        <div class="section__head section__head--left reveal">
+          <span class="section__num">05</span>
+          <div>
+            <p class="eyebrow">Частые вопросы</p>
+            <h2 class="section__title">Отвечаем <em>заранее</em></h2>
+          </div>
+        </div>
         <div class="faq__list">
           <details class="faq__item reveal">
             <summary>Как записаться на приём?<span aria-hidden="true"></span></summary>
-            <div><p>Позвоните по номеру +7 993 044-06-19 или заполните форму на сайте. Заявка откроется в WhatsApp с готовым текстом.</p></div>
+            <div><p>Позвоните по номеру +7 993 044-06-19 или заполните форму на сайте — заявка откроется в WhatsApp с уже готовым текстом.</p></div>
           </details>
           <details class="faq__item reveal">
             <summary>Нужно ли направление от врача?<span aria-hidden="true"></span></summary>
-            <div><p>Нет. Если у вас есть заключения, снимки или результаты обследований, возьмите их с собой: это поможет специалисту.</p></div>
+            <div><p>Нет. Если у вас есть заключения, снимки или результаты обследований — возьмите их с собой, это поможет специалисту.</p></div>
           </details>
           <details class="faq__item reveal">
             <summary>Сколько процедур понадобится?<span aria-hidden="true"></span></summary>
-            <div><p>Количество сеансов зависит от состояния и задачи. Его определяет специалист после консультации и при необходимости корректирует по ходу курса.</p></div>
+            <div><p>Количество сеансов зависит от состояния и задачи. Его определяет специалист после консультации и может скорректировать по ходу курса.</p></div>
           </details>
           <details class="faq__item reveal">
             <summary>Есть ли противопоказания?<span aria-hidden="true"></span></summary>
-            <div><p>Да, у ряда процедур есть противопоказания. Расскажите специалисту о хронических заболеваниях и самочувствии, и он подберёт безопасный вариант.</p></div>
+            <div><p>Да, у ряда процедур есть противопоказания. Расскажите специалисту о хронических заболеваниях и самочувствии — он подберёт безопасный вариант.</p></div>
           </details>
           <details class="faq__item reveal">
             <summary>Где вы находитесь?<span aria-hidden="true"></span></summary>
@@ -476,36 +450,25 @@
     </section>
 
     <!-- ============ BOOKING / CONTACTS ============ -->
-    <section class="section section--navy" id="contacts">
+    <section class="section section--sand" id="contacts">
       <div class="container booking" id="booking">
         <div class="booking__info reveal">
-          <p class="label label--light">Запись и контакты</p>
-          <h2 class="section__title">Запишитесь на удобное время</h2>
+          <span class="section__num">06</span>
+          <p class="eyebrow">Запись и контакты</p>
+          <h2 class="section__title">Запишитесь <em>на удобное время</em></h2>
           <ul class="contacts">
-            <li>
-              <span>Телефон</span>
-              <a href="tel:+79930440619" class="contacts__phone">+7 993 044-06-19</a>
-            </li>
-            <li>
-              <span>Написать</span>
-              <a href="https://wa.me/79930440619" class="contacts__link" target="_blank" rel="noopener">WhatsApp</a>
-            </li>
-            <li>
-              <span>Адрес</span>
-              <div class="contacts__addr">
-                <p>Салават, ул. Юлаева, 29а<br />Дом Быта, 3 этаж</p>
-                <a class="route-btn" href="https://yandex.ru/maps/?rtext=~%D0%A0%D0%BE%D1%81%D1%81%D0%B8%D1%8F%2C%20%D0%A0%D0%B5%D1%81%D0%BF%D1%83%D0%B1%D0%BB%D0%B8%D0%BA%D0%B0%20%D0%91%D0%B0%D1%88%D0%BA%D0%BE%D1%80%D1%82%D0%BE%D1%81%D1%82%D0%B0%D0%BD%2C%20%D0%A1%D0%B0%D0%BB%D0%B0%D0%B2%D0%B0%D1%82%2C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%AE%D0%BB%D0%B0%D0%B5%D0%B2%D0%B0%2C%2029%D0%90&amp;rtt=auto" target="_blank" rel="noopener">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
-                  Маршрут
-                </a>
-              </div>
-            </li>
+            <li><span>Телефон</span><a href="tel:+79930440619">+7 993 044-06-19</a></li>
+            <li><span>Адрес</span><p>Салават, ул. Юлаева, 29а<br />Дом Быта, 3 этаж</p></li>
           </ul>
+          <div class="map">
+            <iframe title="Карта: Салават, ул. Юлаева, 29а, Дом Быта, 3 этаж" loading="lazy" src="https://yandex.ru/map-widget/v1/?mode=search&amp;text=%D0%A0%D0%BE%D1%81%D1%81%D0%B8%D1%8F%2C%20%D0%A0%D0%B5%D1%81%D0%BF%D1%83%D0%B1%D0%BB%D0%B8%D0%BA%D0%B0%20%D0%91%D0%B0%D1%88%D0%BA%D0%BE%D1%80%D1%82%D0%BE%D1%81%D1%82%D0%B0%D0%BD%2C%20%D0%A1%D0%B0%D0%BB%D0%B0%D0%B2%D0%B0%D1%82%2C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%AE%D0%BB%D0%B0%D0%B5%D0%B2%D0%B0%2C%2029%D0%90&amp;z=17"></iframe>
+          </div>
+          <a class="map__link" href="https://yandex.ru/maps/?mode=search&amp;text=%D0%A0%D0%BE%D1%81%D1%81%D0%B8%D1%8F%2C%20%D0%A0%D0%B5%D1%81%D0%BF%D1%83%D0%B1%D0%BB%D0%B8%D0%BA%D0%B0%20%D0%91%D0%B0%D1%88%D0%BA%D0%BE%D1%80%D1%82%D0%BE%D1%81%D1%82%D0%B0%D0%BD%2C%20%D0%A1%D0%B0%D0%BB%D0%B0%D0%B2%D0%B0%D1%82%2C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%AE%D0%BB%D0%B0%D0%B5%D0%B2%D0%B0%2C%2029%D0%90" target="_blank" rel="noopener">Открыть в Яндекс Картах →</a>
         </div>
 
         <form class="form reveal" id="booking-form" novalidate>
           <h3>Заявка на приём</h3>
-          <p class="form__lead">Заполните форму, и заявка откроется в WhatsApp с готовым текстом. Останется только отправить.</p>
+          <p class="form__lead">Заполните форму — заявка откроется в WhatsApp с готовым текстом, останется только отправить.</p>
           <label class="field">
             <span>Ваше имя</span>
             <input type="text" name="name" autocomplete="name" required minlength="2" placeholder="Как к вам обращаться" />
@@ -541,7 +504,7 @@
           </label>
           <em class="field__error field__error--consent" aria-live="polite"></em>
           <button type="submit" class="btn btn--gold btn--lg btn--block">Отправить в WhatsApp</button>
-          <a href="tel:+79930440619" class="btn btn--line-dark btn--lg btn--block">Позвонить</a>
+          <a href="tel:+79930440619" class="btn btn--ghost-dark btn--lg btn--block">Или позвоните: +7 993 044-06-19</a>
         </form>
       </div>
     </section>
@@ -556,7 +519,7 @@
         <span class="logo__text"><b>Кабинет здоровья</b><small>доктора Горшечникова</small></span>
       </a>
       <nav class="footer__nav" aria-label="Нижняя навигация">
-        <a href="#procedures">Процедуры</a><a href="#prices">Цены</a><a href="#team">Специалисты</a><a href="#contacts">Контакты</a>
+        <a href="#directions">Направления</a><a href="#prices">Цены</a><a href="#team">Команда</a><a href="#contacts">Контакты</a>
       </nav>
       <div class="footer__contacts">
         <a href="tel:+79930440619">+7 993 044-06-19</a>
@@ -573,27 +536,9 @@
     </div>
   </footer>
 
-  <!-- ============ PROCEDURE DETAILS ============ -->
-  <dialog class="sheet" id="proc-sheet" aria-labelledby="sheet-title">
-    <div class="sheet__inner">
-      <button class="sheet__close" type="button" aria-label="Закрыть" data-sheet-close><span></span><span></span></button>
-      <figure class="sheet__img"><img src="" alt="" id="sheet-img" /></figure>
-      <div class="sheet__body">
-        <div class="sheet__head">
-          <h3 id="sheet-title"></h3>
-          <span class="sheet__price" id="sheet-price"></span>
-        </div>
-        <div class="sheet__content" id="sheet-content"></div>
-        <p class="sheet__warn">Имеются противопоказания. Необходима консультация специалиста.</p>
-        <div class="sheet__actions">
-          <a href="#booking" class="btn btn--gold btn--lg" id="sheet-book">Записаться на процедуру</a>
-          <a href="tel:+79930440619" class="btn btn--line-dark btn--lg">Позвонить</a>
-        </div>
-      </div>
-    </div>
-  </dialog>
-
-  <a href="#booking" class="fab" aria-label="Записаться на приём">Записаться</a>
+  <a href="#booking" class="fab" aria-label="Записаться на приём">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M4 9h16M9 3v4M15 3v4"/></svg>
+  </a>
 
   <script src="/assets/js/main.js" defer></script>
 </body>
