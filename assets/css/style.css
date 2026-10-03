@@ -516,3 +516,70 @@ html.is-locked { background: var(--navy-900); }
   .marquee__track { animation: none; }
   .reveal { opacity: 1; transform: none; }
 }
+
+/* ==========================================================
+   Процедуры: «Подробнее» и акцент на карточках
+   ========================================================== */
+.dir-card { position: relative; border: 1px solid transparent; }
+.dir-card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; z-index: 2; background: linear-gradient(90deg, var(--gold-2), var(--gold-3)); transform: scaleX(0); transform-origin: left; transition: transform .6s var(--ease); }
+.dir-card:hover { border-color: rgba(201,162,122,.45); }
+.dir-card:hover::before { transform: scaleX(1); }
+.dir-card h3 { font-size: 27px; }
+.dir-card__foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+.dir-card__foot .dir-card__price { margin-top: 0; }
+.dir-card__more { display: inline-flex; align-items: center; gap: 6px; padding: 8px 0; border: 0; background: none; cursor: pointer; font-weight: 800; font-size: 13.5px; color: var(--gold-3); white-space: nowrap; transition: color .3s; }
+.dir-card__more svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .4s var(--ease); }
+.dir-card__more:hover { color: var(--navy-800); }
+.dir-card__more:hover svg { transform: translateX(4px); }
+.dir-card[data-proc] { cursor: pointer; }
+
+.proc-modal { padding: 0; border: 0; background: transparent; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; overflow: hidden; color: var(--ink); }
+.proc-modal::backdrop { background: rgba(8, 23, 38, .6); backdrop-filter: blur(6px); }
+.proc-modal__card { position: absolute; left: 50%; top: 50%; width: min(920px, calc(100% - 40px)); height: min(600px, calc(100% - 60px)); display: grid; grid-template-columns: 1fr 1.15fr; background: var(--white); border-radius: 28px; overflow: hidden; box-shadow: 0 40px 100px -30px rgba(0,0,0,.55); transform: translate(-50%, -46%) scale(.98); opacity: 0; transition: transform .55s var(--ease), opacity .35s; }
+.proc-modal.is-shown .proc-modal__card { transform: translate(-50%, -50%); opacity: 1; }
+.proc-modal__img { position: relative; background: var(--ivory-2); }
+.proc-modal__img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.proc-modal__body { padding: 44px 40px 36px; overflow-y: auto; }
+.proc-modal__body h3 { font-family: var(--serif); font-size: 38px; line-height: 1.05; padding-right: 40px; }
+.proc-modal__price { display: inline-block; margin: 14px 0 22px; padding: 6px 14px; border-radius: 999px; background: var(--ivory-2); color: var(--navy-800); font-weight: 800; font-size: 14px; }
+.proc-modal__content .lead { font-size: 16.5px; margin-bottom: 22px; }
+.proc-modal__content h4 { font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--gold-3); margin: 0 0 10px; }
+.proc-modal__content ul { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 8px; }
+.proc-modal__content li { display: flex; gap: 10px; font-size: 15px; }
+.proc-modal__content li::before { content: ""; width: 6px; height: 6px; margin-top: 9px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+.proc-modal__content p { font-size: 15px; color: var(--muted); margin-bottom: 22px; }
+.proc-modal__warn { font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 22px; }
+.proc-modal__actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.proc-modal__close { position: absolute; top: 16px; right: 16px; z-index: 3; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--white); cursor: pointer; }
+.proc-modal__close span { position: absolute; left: 13px; right: 13px; top: 21px; height: 1.6px; background: var(--navy-800); transform: rotate(45deg); }
+.proc-modal__close span + span { transform: rotate(-45deg); }
+
+/* Кнопка «Маршрут» вместо карты */
+.route-btn { margin-top: 4px; }
+.route-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.route-btn:hover svg { transform: none; }
+
+/* Команда: последняя карточка не висит одна */
+@media (max-width: 1180px) and (min-width: 681px) {
+  .team-grid { grid-template-columns: repeat(6, 1fr); }
+  .team-grid .member { grid-column: span 2; }
+  .team-grid .member:nth-child(4), .team-grid .member:nth-child(5) { grid-column: span 3; }
+  .team-grid .member:nth-child(4) .member__photo, .team-grid .member:nth-child(5) .member__photo { aspect-ratio: 4 / 3; }
+}
+@media (max-width: 680px) {
+  .team-grid .member:last-child { grid-column: 1 / -1; }
+  .team-grid .member:last-child .member__photo { aspect-ratio: 4 / 3; }
+  .team-grid .member:last-child .member__photo img { object-position: center 20%; }
+  .dir-card__foot { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .dir-card h3 { font-size: 20px; }
+  .dir-card__more { font-size: 13px; padding: 4px 0; }
+}
+@media (max-width: 980px) {
+  .proc-modal__card { left: 0; right: 0; top: auto; bottom: 0; width: 100%; height: auto; max-height: 92%; display: block; overflow-y: auto; border-radius: 24px 24px 0 0; transform: translateY(100%); opacity: 1; }
+  .proc-modal.is-shown .proc-modal__card { transform: none; }
+  .proc-modal__img { aspect-ratio: 16 / 10; }
+  .proc-modal__body { padding: 24px 20px calc(26px + env(safe-area-inset-bottom)); overflow: visible; }
+  .proc-modal__body h3 { font-size: 30px; }
+  .proc-modal__close { background: rgba(255,255,255,.92); border-color: transparent; }
+  .proc-modal__actions .btn { width: 100%; }
+}
