@@ -1,0 +1,199 @@
+/* ==========================================================
+   Тема «белый + индиго» (в стиле Instagram клиники)
+   Подключается ПОСЛЕ style.css и только переопределяет цвета.
+   Откат к золоту/тёмно-синему: удалить <link> на этот файл в index.html.
+   Полный откат сайта: ветка backup-gold-navy на GitHub.
+   ========================================================== */
+:root {
+  /* «золото» → индиго (имена переменных оставлены, чтобы не трогать style.css) */
+  --gold: #5952fb;      /* основной индиго, цвет логотипа */
+  --gold-2: #a9a5ff;    /* светлый индиго — акценты на тёмном фоне */
+  --gold-3: #463ee6;    /* насыщенный индиго — акценты на белом */
+  /* тёмные блоки — глубокий индиго */
+  --navy-900: #110e3a;
+  --navy-800: #19155a;
+  --navy-700: #27207f;
+  --navy-600: #3b33b8;
+  /* светлые фоны — белый и лёгкий лавандовый */
+  --ivory: #ffffff;
+  --ivory-2: #f4f3ff;
+  --sand: #e9e7fe;
+  --ink: #15133a;
+  --muted: #5e5c7a;
+  --line: rgba(21, 19, 58, .1);
+  --shadow: 0 30px 60px -30px rgba(25, 21, 90, .3);
+  --shadow-sm: 0 12px 30px -16px rgba(25, 21, 90, .25);
+  --indigo-glow: rgba(89, 82, 251, .28);
+}
+
+body { background: var(--ivory); }
+::selection { background: rgba(89, 82, 251, .2); }
+
+/* ---------- Кнопки ---------- */
+.btn--gold { color: #fff; background: linear-gradient(135deg, #6f69ff, #5952fb 55%, #463ee6); box-shadow: 0 14px 30px -12px rgba(89,82,251,.6); }
+.btn--gold:hover { box-shadow: 0 20px 40px -14px rgba(89,82,251,.8); }
+.btn::after { background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.3) 50%, transparent 70%); }
+.skip-link { color: #fff; }
+.eyebrow .dot { box-shadow: 0 0 0 4px rgba(89,82,251,.2); }
+@keyframes pulse { 50% { box-shadow: 0 0 0 9px rgba(89,82,251,0); } }
+
+/* ---------- Интро: белый экран, логотип проявляется слева направо ---------- */
+.intro__panel--top { background: linear-gradient(180deg, #fff, #f6f5ff); }
+.intro__panel--bottom { background: linear-gradient(0deg, #fff, #f6f5ff); }
+.intro__mark { width: 150px; }
+.intro__mark path { fill: var(--gold); stroke: none; stroke-dasharray: none; filter: none; }
+.intro__mark { clip-path: inset(0 100% 0 0); }
+.intro.is-run .intro__mark { animation: logoReveal 1.1s .15s var(--ease) forwards; }
+@keyframes logoReveal { to { clip-path: inset(0 0 0 0); } }
+.intro__title { color: var(--ink); }
+.intro__line--sub > span { color: var(--gold-3); }
+.intro__bar { background: rgba(89,82,251,.15); }
+
+/* ---------- Логотип ---------- */
+.logo__mark { width: 52px; }
+.logo__mark path { fill: var(--gold); stroke: none; }
+.logo--light .logo__mark path { fill: #fff; }
+
+/* ---------- Шапка: тёмный текст на светлом первом экране ---------- */
+.header { color: var(--ink); }
+.header.is-scrolled { background: rgba(255, 255, 255, .9); }
+
+/* ---------- Первый экран: белый с мягким индиго-свечением ---------- */
+.hero { background: linear-gradient(180deg, #ffffff 0%, #f6f5ff 100%); color: var(--ink); }
+.hero__glow--1 { background: radial-gradient(circle, rgba(89,82,251,.22), transparent 65%); }
+.hero__glow--2 { background: radial-gradient(circle, rgba(169,165,255,.35), transparent 65%); }
+.hero__grid { background-image: linear-gradient(rgba(89,82,251,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(89,82,251,.06) 1px, transparent 1px); }
+.hero__title em { color: var(--gold); }
+.hero__lead { color: var(--muted); }
+.hero .eyebrow { color: var(--gold-3); }
+.hero__arch-ring { border-color: rgba(89,82,251,.35); }
+.hero__photo { background: var(--sand); box-shadow: 0 40px 80px -30px rgba(25,21,90,.4); }
+.hero__photo::after { background: linear-gradient(180deg, transparent 60%, rgba(17,14,58,.35)); }
+.float-card { background: rgba(255,255,255,.95); border: 1px solid rgba(89,82,251,.12); }
+.float-card--team { background: var(--navy-800); border-color: rgba(169,165,255,.3); }
+.avatars img { border-color: var(--navy-800); }
+.hero__address { color: var(--muted); }
+.hero__address svg { stroke: var(--gold); }
+.hero__address:hover { color: var(--gold-3); }
+
+/* Акционная плашка на первом экране */
+.hero-offer {
+  display: inline-flex; align-items: center; gap: 16px; margin-top: 28px; padding: 12px 22px 12px 12px;
+  border-radius: 20px; background: #fff; border: 1px solid rgba(89,82,251,.22);
+  box-shadow: 0 18px 40px -22px rgba(89,82,251,.55); text-align: left;
+  transition: transform .5s var(--ease), box-shadow .5s var(--ease), border-color .3s, opacity 1s var(--ease);
+}
+.hero-offer:hover { transform: translateY(-3px); border-color: var(--gold); box-shadow: 0 24px 46px -22px rgba(89,82,251,.7); }
+.hero-offer__zero {
+  flex-shrink: 0; display: grid; place-items: center; min-width: 74px; height: 58px; padding: 0 12px; border-radius: 14px;
+  background: linear-gradient(135deg, #6f69ff, #463ee6); color: #fff; font-family: var(--serif); font-size: 30px; font-weight: 700; line-height: 1;
+}
+.hero-offer__text { display: flex; flex-direction: column; line-height: 1.25; }
+.hero-offer__text small { font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--gold-3); }
+.hero-offer__text b { font-size: 16.5px; font-weight: 700; color: var(--ink); margin-top: 3px; }
+.hero__actions { margin-top: 24px; }
+body.is-ready .hero-offer { transition-delay: .4s; }
+body.is-ready .hero__actions { transition-delay: .5s; }
+
+/* ---------- Бегущая строка ---------- */
+.marquee { background: var(--gold); color: #fff; }
+
+/* ---------- Секции ---------- */
+.section--navy::before { background: radial-gradient(circle, rgba(89,82,251,.3), transparent 65%); }
+.section__title em { color: var(--gold); }
+.section--navy .section__title em { color: var(--gold-2); }
+.dir-card { border-color: rgba(89,82,251,.08); }
+.dir-card:hover { border-color: rgba(89,82,251,.4); }
+.dir-card::before { background: linear-gradient(90deg, #8f8aff, var(--gold-3)); }
+.dir-card__img::after { background: linear-gradient(180deg, transparent 60%, rgba(25,21,90,.2)); }
+.dir-card__price { background: var(--ivory-2); color: var(--gold-3); }
+.dir-card__more:hover { color: var(--ink); }
+
+/* ---------- Акция ---------- */
+.promo { background: linear-gradient(135deg, var(--navy-800), var(--navy-700) 60%, #3a31c4); }
+.promo::before { background: radial-gradient(circle at 85% 20%, rgba(169,165,255,.35), transparent 45%); }
+.promo h2 em { color: var(--gold-2); }
+.promo__lead { color: rgba(255,255,255,.78); }
+.promo__note { color: rgba(255,255,255,.55); }
+.promo__price { display: flex; align-items: baseline; gap: 12px; margin: -4px 0 16px; }
+.promo__zero { font-family: var(--serif); font-size: clamp(56px, 7vw, 84px); font-weight: 700; line-height: .9; color: #fff; }
+.promo__price-note { font-weight: 700; color: var(--gold-2); }
+.checklist li::before { background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235952fb' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E") center/13px no-repeat; }
+.promo .btn--gold { background: #fff; color: var(--gold-3); box-shadow: 0 14px 30px -12px rgba(0,0,0,.35); }
+.promo .btn--gold::after { background: linear-gradient(110deg, transparent 30%, rgba(89,82,251,.15) 50%, transparent 70%); }
+
+/* ---------- Цены ---------- */
+.tabs { background: var(--ivory-2); }
+.tabs__ink { background: var(--gold); }
+.tab.is-active { color: #fff; }
+.price-table td:last-child { color: var(--gold-3); }
+.price-table tbody tr:hover { background: var(--ivory-2); }
+.complex { background: var(--ivory-2); }
+.complex__prices span { color: var(--gold-3); }
+.complex--dark .complex__prices span { color: #fff; }
+.complex--dark .complex__prices small { color: rgba(255,255,255,.6); }
+.complex--dark .complex__list li::before { background: var(--gold-2); }
+
+/* ---------- Врач / команда ---------- */
+.doctor__sign { color: #fff; background: var(--gold); }
+.doctor__role { color: var(--gold-3); }
+.principle { background: rgba(255,255,255,.8); }
+.member__body { background: linear-gradient(180deg, transparent, rgba(17,14,58,.9) 55%); }
+.member p { color: var(--gold-2); }
+
+/* ---------- FAQ ---------- */
+.faq__item summary span::before, .faq__item summary span::after { background: var(--gold-3); }
+.faq__item[open] summary span { background: var(--gold); }
+.faq__item[open] summary span::before, .faq__item[open] summary span::after { background: #fff; }
+
+/* ---------- Контакты и форма ---------- */
+.contacts a { color: var(--ink); }
+.contacts a:hover, .map__link:hover { color: var(--gold); }
+.map__link { color: var(--gold-3); }
+.form { background: linear-gradient(160deg, var(--navy-800), var(--navy-700)); }
+.form::before { background: radial-gradient(circle, rgba(169,165,255,.3), transparent 65%); }
+.form__offer { margin: -6px 0 2px; padding: 10px 14px; border-radius: 12px; background: rgba(255,255,255,.08); border: 1px solid rgba(169,165,255,.3); font-size: 14px; color: rgba(255,255,255,.85); }
+.form__offer b { color: #fff; }
+.form .btn--gold { background: #fff; color: var(--gold-3); box-shadow: 0 14px 30px -12px rgba(0,0,0,.35); }
+.field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a9a5ff' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--gold-2); box-shadow: 0 0 0 4px rgba(169,165,255,.2); }
+.check input { accent-color: var(--gold-2); }
+.form .btn--ghost-dark:hover { border-color: var(--gold-2); color: #fff; }
+
+/* ---------- Подвал ---------- */
+.footer__contacts a { color: #fff; }
+.footer__nav a:hover { color: var(--gold-2); }
+
+/* ---------- Плавающая кнопка ---------- */
+.fab { background: linear-gradient(135deg, #6f69ff, #463ee6); color: #fff; box-shadow: 0 16px 30px -10px rgba(89,82,251,.7); }
+
+/* ---------- Мобильное меню ---------- */
+html.is-locked { background: var(--navy-900); }
+.mmenu__doctor { border-color: rgba(169,165,255,.25); }
+.mmenu__doctor img { border-color: var(--gold-2); }
+.mmenu__watermark { width: 360px; opacity: .07; }
+.mmenu__watermark path { fill: var(--gold-2); stroke: none; }
+.mmenu .btn--gold { background: #fff; color: var(--gold-3); }
+
+/* ---------- Окно «Подробнее» ---------- */
+.proc-modal__price { background: var(--ivory-2); color: var(--gold-3); }
+.proc-modal__content li::before { background: var(--gold); }
+.proc-modal__close span { background: var(--ink); }
+
+/* ---------- Адаптив ---------- */
+@media (max-width: 980px) {
+  .hero__address { border-color: rgba(89,82,251,.18); background: rgba(255,255,255,.7); }
+  .hero-offer { margin-inline: auto; }
+}
+@media (max-width: 680px) {
+  .logo__mark { width: 44px; }
+  .hero-offer { width: 100%; padding: 10px 14px 10px 10px; gap: 12px; }
+  .hero-offer__zero { min-width: 62px; height: 52px; font-size: 26px; }
+  .hero-offer__text b { font-size: 15px; }
+}
+
+/* Карточка «0 ₽» поверх фото — акция видна на первом экране и на телефоне */
+.float-card--offer { background: linear-gradient(135deg, #6f69ff, #463ee6); border-color: transparent; color: #fff; box-shadow: 0 24px 50px -20px rgba(70,62,230,.75); }
+.float-card--offer .float-card__num { color: #fff; font-size: 38px; }
+.float-card--offer small { color: rgba(255,255,255,.88); font-weight: 600; line-height: 1.25; display: block; margin-top: 4px; }
+@media (max-width: 680px) { .float-card--offer .float-card__num { font-size: 28px; } .float-card--offer small { font-size: 11.5px; } }
