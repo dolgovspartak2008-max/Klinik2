@@ -615,3 +615,17 @@ html.menu-open .mmenu { height: auto; bottom: 0; min-height: 100lvh; }
 
 /* Новое вертикальное фото массажа: в карточке видны руки специалиста и шея */
 .dir-card__img img.pos-massage { object-position: center 32%; }
+
+/* Окно «Подробнее» как отдельная вкладка: пока оно открыто, сайт под ним скрыт,
+   а фон страницы белый, как у окна. В Instagram/Safari сверху и снизу
+   (под панелями браузера) сайт больше не просвечивает. */
+html.modal-open, html.modal-open body { background: #fff; }
+html.modal-open .header, html.modal-open main, html.modal-open .footer, html.modal-open .fab {
+  visibility: hidden; transition: visibility 0s .3s;
+}
+html.modal-open .proc-modal { top: 0; bottom: 0; height: auto; min-height: 100lvh; }
+
+/* Заставка при загрузке: пока она на экране, сайт под ней тоже скрыт */
+body.is-loading { background: #fff; }
+body.is-loading .header, body.is-loading main, body.is-loading .footer, body.is-loading .fab { visibility: hidden; }
+.intro { bottom: 0; min-height: 100lvh; height: auto; }

@@ -309,13 +309,14 @@
     modal.querySelector('.proc-modal__body').scrollTop = 0;
     modal.querySelector('.proc-modal__card').scrollTop = 0;
     if (modal.showModal) modal.showModal(); else modal.setAttribute('open', '');
-    root.classList.add('is-locked');
+    root.classList.add('is-locked', 'modal-open');
     requestAnimationFrame(() => requestAnimationFrame(() => modal.classList.add('is-shown')));
     /* Жест/кнопка «назад» закрывает окно, а не уводит с сайта */
     try { history.pushState({ procModal: true }, ''); hasState = true; } catch (e) { hasState = false; }
   };
   const finish = (after) => {
     modal.classList.remove('is-shown');
+    root.classList.remove('modal-open');
     setTimeout(() => {
       if (modal.open) modal.close();
       root.classList.remove('is-locked');
