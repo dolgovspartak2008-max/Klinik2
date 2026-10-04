@@ -129,8 +129,13 @@ body.is-ready .hero__actions { transition-delay: .5s; }
 .price-table td:last-child { color: var(--gold-3); }
 .price-table tbody tr:hover { background: var(--ivory-2); }
 .complex { background: var(--ivory-2); }
-.complex.complex--dark { background: linear-gradient(160deg, var(--navy-800), var(--navy-700)); color: #fff; }
-.complex--dark .btn--gold { background: #fff; color: var(--gold-3); box-shadow: 0 14px 30px -12px rgba(0,0,0,.35); }
+/* «Лечебный комплекс» оформлен так же, как «Комплекс «Хиджама»» */
+.complex.complex--dark { background: var(--ivory-2); color: var(--ink); }
+.complex.complex--dark .complex__prices span { color: var(--gold-3); }
+.complex.complex--dark .complex__prices small { color: var(--muted); }
+.complex.complex--dark .complex__list li::before { background: var(--gold); }
+.complex--dark .btn--gold { --bg: var(--navy-800); background: var(--navy-800); color: #fff; box-shadow: none; }
+.complex--dark .btn--gold:hover { background: var(--navy-700); }
 .complex__prices span { color: var(--gold-3); }
 .complex--dark .complex__prices span { color: #fff; }
 .complex--dark .complex__prices small { color: rgba(255,255,255,.6); }
