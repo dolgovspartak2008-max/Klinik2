@@ -612,3 +612,6 @@ html.menu-open .header, html.menu-open main, html.menu-open .footer, html.menu-o
   visibility: hidden; transition: visibility 0s .7s;
 }
 html.menu-open .mmenu { height: auto; bottom: 0; min-height: 100lvh; }
+
+/* Новое вертикальное фото массажа: в карточке видны руки специалиста и шея */
+.dir-card__img img.pos-massage { object-position: center 32%; }
