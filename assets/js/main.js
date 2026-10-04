@@ -50,9 +50,14 @@
   const menu = document.getElementById('mmenu');
   const root = document.documentElement;
   let menuTimer;
+  // цвет верхней/нижней панели браузера: при открытом меню — как у меню
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  const themeDefault = themeMeta ? themeMeta.content : '';
   const setMenu = (open) => {
     clearTimeout(menuTimer);
     burger.setAttribute('aria-expanded', String(open));
+    root.classList.toggle('menu-open', open);
+    if (themeMeta) themeMeta.content = open ? getComputedStyle(root).getPropertyValue('--navy-900').trim() || themeDefault : themeDefault;
     if (open) {
       menu.hidden = false;
       root.classList.add('is-locked');

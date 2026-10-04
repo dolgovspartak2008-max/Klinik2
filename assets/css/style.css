@@ -601,3 +601,14 @@ html.is-locked { background: var(--navy-900); }
   .proc-modal__close { position: fixed; top: calc(14px + env(safe-area-inset-top)); right: 14px; }
 }
 @media (prefers-reduced-motion: reduce) { .proc-modal__card { transform: none; transition: none; } }
+
+/* Мобильное меню как отдельный экран: пока оно открыто, сайт под ним скрыт,
+   а фон страницы — цвета меню. Так в Instagram/Safari сверху и снизу
+   (под панелями браузера, при «оттягивании» страницы) не просвечивает сайт.
+   Скрытие включается после того, как шторка меню опустилась (.7s),
+   а при закрытии сайт возвращается сразу — анимация не ломается. */
+html.menu-open, html.menu-open body { background: var(--navy-900); }
+html.menu-open .header, html.menu-open main, html.menu-open .footer, html.menu-open .fab {
+  visibility: hidden; transition: visibility 0s .7s;
+}
+html.menu-open .mmenu { height: auto; bottom: 0; min-height: 100lvh; }
