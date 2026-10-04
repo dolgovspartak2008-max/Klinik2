@@ -629,3 +629,23 @@ html.modal-open .proc-modal { top: 0; bottom: 0; height: auto; min-height: 100lv
 body.is-loading { background: #fff; }
 body.is-loading .header, body.is-loading main, body.is-loading .footer, body.is-loading .fab { visibility: hidden; }
 .intro { bottom: 0; min-height: 100lvh; height: auto; }
+
+/* Направления: 8 карточек ровной сеткой без пустых мест
+   ПК (4 колонки): хиджама 2×2, тейпирование — широкая в конце ряда
+   Планшет (3 колонки): хиджама 2 колонки, остальные по одной
+   Телефон (2 колонки): хиджама и тейпирование на всю ширину */
+.dir-card__img img.pos-tape { object-position: center 42%; }
+@media (min-width: 1181px) {
+  .dir-grid > :first-child { grid-row: span 2; }
+  .dir-grid > :first-child .dir-card__body { flex: none; }
+  .dir-grid > :last-child { grid-column: span 2; }
+  .dir-grid > :last-child .dir-card__img { aspect-ratio: 16 / 7; }
+}
+@media (max-width: 1180px) and (min-width: 681px) {
+  .dir-grid > :last-child { grid-column: auto; }
+  .dir-grid > :last-child .dir-card__img { aspect-ratio: 4 / 3; }
+}
+@media (max-width: 680px) {
+  .dir-grid > :last-child { grid-column: 1 / -1; }
+  .dir-grid > :last-child .dir-card__img { aspect-ratio: 16 / 9; }
+}
