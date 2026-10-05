@@ -20,7 +20,7 @@ python3 -m http.server 8000
 - Фото команды пока старые — заменить, когда будут в хорошем качестве.
 
 ## SEO
-Основной адрес — `https://drgorshechnikov.ru` (без www; www → 301 в `vercel.json`). Домен прописан в: `index.html` (canonical, og:url, og:image, twitter:image, JSON-LD), `robots.txt`, `sitemap.xml`.
+Основной адрес — `https://www.drgorshechnikov.ru` (с www; адрес без www перенаправляется на него настройками домена в Vercel — не добавлять обратный редирект в `vercel.json`, будет петля). Домен прописан в: `index.html` (canonical, og:url, og:image, twitter:image, JSON-LD), `robots.txt`, `sitemap.xml`.
 - При правке контента обновить `<lastmod>` в `sitemap.xml`.
 - Описания процедур для окна «Подробнее» лежат в HTML карточек (`.dir-card__info`), а не в JS — так их видят поисковики.
 - Вопросы FAQ продублированы в JSON-LD (`FAQPage`) — при изменении вопросов править оба места.
