@@ -3,23 +3,128 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Кабинет здоровья доктора Горшечникова — Салават</title>
-  <meta name="description" content="Лечение и восстановление опорно-двигательного аппарата в Салавате: массаж, физиотерапия, хиджама, ударно-волновая и магнитно-лазерная терапия. ул. Юлаева, 29а, Дом Быта, 3 этаж." />
+  <title>Массаж и физиотерапия в Салавате — Кабинет здоровья доктора Горшечникова</title>
+  <meta name="description" content="Массаж, физиотерапия, хиджама, ударно-волновая и магнитно-лазерная терапия в Салавате. Новым пациентам консультация и процедура — бесплатно. ул. Юлаева, 29а." />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
   <meta name="theme-color" content="#ffffff" />
-  <link rel="canonical" href="/" />
+  <link rel="canonical" href="https://drgorshechnikov.ru/" />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="ru_RU" />
-  <meta property="og:title" content="Кабинет здоровья доктора Горшечникова" />
+  <meta property="og:site_name" content="Кабинет здоровья доктора Горшечникова" />
+  <meta property="og:url" content="https://drgorshechnikov.ru/" />
+  <meta property="og:title" content="Кабинет здоровья доктора Горшечникова — Салават" />
   <meta property="og:description" content="Новым пациентам консультация и процедура — бесплатно. Массаж и физиотерапия в Салавате. Запись: +7 993 044-06-19" />
-  <meta property="og:image" content="/assets/img/og.jpg" />
+  <meta property="og:image" content="https://drgorshechnikov.ru/assets/img/og.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Кабинет здоровья доктора Горшечникова, Салават" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Кабинет здоровья доктора Горшечникова — Салават" />
+  <meta name="twitter:description" content="Новым пациентам консультация и процедура — бесплатно. Массаж и физиотерапия в Салавате." />
+  <meta name="twitter:image" content="https://drgorshechnikov.ru/assets/img/og.jpg" />
+  <link rel="icon" href="/favicon.ico" sizes="32x32" />
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="preload" as="image" href="/assets/img/doctor.webp" />
+  <link rel="preload" as="image" href="/assets/img/doctor.webp" fetchpriority="high" />
   <link rel="stylesheet" href="/assets/css/style.css?v=20261004n" />
   <!-- Тема «белый + индиго». Откат цветов к золоту/тёмно-синему: удалить строку ниже -->
   <link rel="stylesheet" href="/assets/css/theme-indigo.css?v=20261004j" />
+  <!-- Если JS отключён — показываем сайт сразу, без заставки и анимаций -->
+  <noscript><style>
+    .intro { display: none !important; }
+    body.is-loading .header, body.is-loading main, body.is-loading .footer { visibility: visible !important; }
+    body.is-loading { overflow: auto !important; }
+    .reveal, .hero-in, .hero-line > span, .float-card, .hero__arch-ring { opacity: 1 !important; transform: none !important; }
+    .hero__photo { clip-path: none !important; }
+    .hero__photo img { transform: none !important; }
+  </style></noscript>
+  <!-- Страховка: если main.js не загрузился или упал, через 6 с показываем сайт -->
+  <script>
+    setTimeout(function () {
+      var b = document.body;
+      if (!b || !b.classList.contains('is-loading')) return;
+      b.classList.remove('is-loading'); b.classList.add('is-ready');
+      var i = document.getElementById('intro'); if (i) i.style.display = 'none';
+      [].forEach.call(document.querySelectorAll('.reveal'), function (el) { el.classList.add('is-in'); });
+    }, 6000);
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://drgorshechnikov.ru/#website",
+        "url": "https://drgorshechnikov.ru/",
+        "name": "Кабинет здоровья доктора Горшечникова",
+        "inLanguage": "ru-RU",
+        "publisher": { "@id": "https://drgorshechnikov.ru/#clinic" }
+      },
+      {
+        "@type": "MedicalClinic",
+        "@id": "https://drgorshechnikov.ru/#clinic",
+        "name": "Кабинет здоровья доктора Горшечникова",
+        "legalName": "ИП Горшечников Андрей Сергеевич",
+        "taxID": "026616663545",
+        "url": "https://drgorshechnikov.ru/",
+        "telephone": "+7-993-044-06-19",
+        "image": "https://drgorshechnikov.ru/assets/img/og.jpg",
+        "logo": "https://drgorshechnikov.ru/apple-touch-icon.png",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "ул. Юлаева, 29а, Дом Быта, 3 этаж",
+          "addressLocality": "Салават",
+          "addressRegion": "Республика Башкортостан",
+          "addressCountry": "RU"
+        },
+        "areaServed": { "@type": "City", "name": "Салават" },
+        "medicalSpecialty": "Physiotherapy",
+        "availableService": [
+          { "@type": "MedicalTherapy", "name": "Массаж" },
+          { "@type": "MedicalTherapy", "name": "Хиджама" },
+          { "@type": "MedicalTherapy", "name": "Ударно-волновая терапия" },
+          { "@type": "MedicalTherapy", "name": "Вакуумно-градиентная терапия" },
+          { "@type": "MedicalTherapy", "name": "Магнитно-лазерная терапия" },
+          { "@type": "MedicalTherapy", "name": "Иглоукалывание" },
+          { "@type": "MedicalTherapy", "name": "Лечение пяточной шпоры" },
+          { "@type": "MedicalTherapy", "name": "Тейпирование" }
+        ],
+        "employee": { "@id": "https://drgorshechnikov.ru/#doctor" }
+      },
+      {
+        "@type": "Physician",
+        "@id": "https://drgorshechnikov.ru/#doctor",
+        "name": "Андрей Сергеевич Горшечников",
+        "jobTitle": "Главный врач, физиотерапевт",
+        "image": "https://drgorshechnikov.ru/assets/img/doctor.webp",
+        "telephone": "+7-993-044-06-19",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "ул. Юлаева, 29а, Дом Быта, 3 этаж",
+          "addressLocality": "Салават",
+          "addressRegion": "Республика Башкортостан",
+          "addressCountry": "RU"
+        },
+        "worksFor": { "@id": "https://drgorshechnikov.ru/#clinic" }
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://drgorshechnikov.ru/#faq",
+        "mainEntity": [
+          { "@type": "Question", "name": "Как записаться на приём?", "acceptedAnswer": { "@type": "Answer", "text": "Позвоните по номеру +7 993 044-06-19 или заполните форму на сайте — заявка откроется в WhatsApp с уже готовым текстом." } },
+          { "@type": "Question", "name": "Что входит в бесплатный первый визит?", "acceptedAnswer": { "@type": "Answer", "text": "Консультация специалиста, первичная оценка состояния, рекомендации по лечению и одна процедура, которую специалист подберёт после осмотра. Предложение действует для новых пациентов." } },
+          { "@type": "Question", "name": "Нужно ли направление от врача?", "acceptedAnswer": { "@type": "Answer", "text": "Нет. Если у вас есть заключения, снимки или результаты обследований — возьмите их с собой, это поможет специалисту." } },
+          { "@type": "Question", "name": "Сколько процедур понадобится?", "acceptedAnswer": { "@type": "Answer", "text": "Количество сеансов зависит от состояния и задачи. Его определяет специалист после консультации и может скорректировать по ходу курса." } },
+          { "@type": "Question", "name": "Есть ли противопоказания?", "acceptedAnswer": { "@type": "Answer", "text": "Да, у ряда процедур есть противопоказания. Расскажите специалисту о хронических заболеваниях и самочувствии — он подберёт безопасный вариант." } },
+          { "@type": "Question", "name": "Где вы находитесь?", "acceptedAnswer": { "@type": "Answer", "text": "Салават, ул. Юлаева, 29а, Дом Быта, 3 этаж." } }
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body class="is-loading">
   <a class="skip-link" href="#main">Перейти к содержимому</a>
@@ -147,10 +252,10 @@
             </a>
             <div class="float-card float-card--team">
               <div class="avatars" aria-hidden="true">
-                <img src="/assets/img/isaev.webp" alt="" width="40" height="40" />
-                <img src="/assets/img/nazyrov.webp" alt="" width="40" height="40" />
-                <img src="/assets/img/gavrilov.webp" alt="" width="40" height="40" />
-                <img src="/assets/img/yunalov.webp" alt="" width="40" height="40" />
+                <img src="/assets/img/isaev-thumb.webp" alt="" width="40" height="40" decoding="async" />
+                <img src="/assets/img/nazyrov-thumb.webp" alt="" width="40" height="40" decoding="async" />
+                <img src="/assets/img/gavrilov-thumb.webp" alt="" width="40" height="40" decoding="async" />
+                <img src="/assets/img/yunalov-thumb.webp" alt="" width="40" height="40" decoding="async" />
               </div>
               <small><b>5 специалистов</b> в команде</small>
             </div>
@@ -190,6 +295,13 @@
               <h3>Хиджама</h3>
               <p>Вакуумные банки с насечками — отдельно или в составе комплекса.</p>
               <div class="dir-card__foot"><span class="dir-card__price">2 500 ₽</span><button class="dir-card__more" type="button">Подробнее <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+              <div class="dir-card__info" hidden data-service="Хиджама">
+                <p class="lead">Традиционная методика баночного кровопускания: на коже делают небольшие поверхностные насечки и устанавливают вакуумные банки.</p>
+                <h4>Кому подходит</h4>
+                <ul><li>Мышечное напряжение и боль в спине</li><li>В составе оздоровительных программ, например комплекса «Хиджама»</li></ul>
+                <h4>Как проходит</h4>
+                <p>Процедуру проводит специалист одноразовыми стерильными инструментами. Перед хиджамой обязательна консультация: у методики есть противопоказания, в том числе нарушения свёртываемости крови, анемия и приём препаратов, разжижающих кровь.</p>
+              </div>
             </div>
           </article>
           <article class="dir-card reveal" data-proc="massage">
@@ -198,6 +310,13 @@
               <h3>Массаж</h3>
               <p>Классический, антицеллюлитный, массаж отдельных зон и всего тела.</p>
               <div class="dir-card__foot"><span class="dir-card__price">от 500 ₽</span><button class="dir-card__more" type="button">Подробнее <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+              <div class="dir-card__info" hidden data-service="Массаж">
+                <p class="lead">Классический массаж с элементами глубокого и фасциального массажа и проработкой триггерных точек.</p>
+                <h4>Кому подходит</h4>
+                <ul><li>Общее мышечное напряжение и усталость</li><li>Боль в спине и шее от сидячей работы</li><li>Восстановление после физических нагрузок</li></ul>
+                <h4>Как проходит</h4>
+                <p>Массажист прорабатывает выбранную зону и уделяет особое внимание участкам напряжения. Продолжительность зависит от зоны: от 10 минут для лица до часа для всего тела.</p>
+              </div>
             </div>
           </article>
           <article class="dir-card reveal" data-proc="uvt">
@@ -206,6 +325,13 @@
               <h3>Ударно-волновая терапия</h3>
               <p>Аппаратное воздействие акустическими волнами на проблемную зону.</p>
               <div class="dir-card__foot"><span class="dir-card__price">от 1 000 ₽</span><button class="dir-card__more" type="button">Подробнее <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+              <div class="dir-card__info" hidden data-service="Ударно-волновая терапия">
+                <p class="lead">Аппарат направляет акустические импульсы на болезненную зону. Они улучшают кровообращение и обменные процессы в тканях и помогают уменьшить боль.</p>
+                <h4>Кому подходит</h4>
+                <ul><li>Пяточная шпора</li><li>Эпикондилит («локоть теннисиста»), тендиниты</li><li>Болезненные уплотнения и триггерные точки в мышцах</li><li>Боль в плече и колене</li></ul>
+                <h4>Как проходит</h4>
+                <p>Насадку аппарата прикладывают к коже через гель. Ощущаются ритмичные толчки, иногда это умеренно неприятно. Обычно назначают курс с перерывами в несколько дней между сеансами.</p>
+              </div>
             </div>
           </article>
           <article class="dir-card reveal" data-proc="vgt">
@@ -214,6 +340,13 @@
               <h3>Вакуумно-градиентная терапия</h3>
               <p>Аппаратный вакуумный массаж для мышц и мягких тканей.</p>
               <div class="dir-card__foot"><span class="dir-card__price">1 500 ₽</span><button class="dir-card__more" type="button">Подробнее <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+              <div class="dir-card__info" hidden data-service="Вакуумно-градиентная терапия">
+                <p class="lead">Аппаратный вакуумный массаж банками. Дозированное разрежение усиливает крово- и лимфоток и расслабляет спазмированные мышцы.</p>
+                <h4>Кому подходит</h4>
+                <ul><li>Спазм и напряжение мышц спины и шеи</li><li>Застойные явления и отёчность</li><li>Восстановление после физических нагрузок</li></ul>
+                <h4>Как проходит</h4>
+                <p>Банки устанавливают на кожу, аппарат создаёт переменное разрежение. После процедуры на коже могут остаться круглые следы, они проходят за несколько дней.</p>
+              </div>
             </div>
           </article>
           <article class="dir-card reveal" data-proc="magnet">
@@ -222,6 +355,13 @@
               <h3>Магнитно-лазерная терапия</h3>
               <p>Физиотерапия магнитным полем и лазерным излучением.</p>
               <div class="dir-card__foot"><span class="dir-card__price">от 1 000 ₽</span><button class="dir-card__more" type="button">Подробнее <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+              <div class="dir-card__info" hidden data-service="Магнитно-лазерная терапия">
+                <p class="lead">Сочетание двух методик. Импульсное магнитное поле проникает в глубокие ткани и вызывает сокращение мышц, а лазерное излучение уменьшает воспаление, отёк и боль.</p>
+                <h4>Кому подходит</h4>
+                <ul><li>Боль в спине и шее, в том числе отдающая в руку или ногу</li><li>Боль в суставах, связках и сухожилиях</li><li>Мышечная слабость, восстановление после травм</li></ul>
+                <h4>Как проходит</h4>
+                <p>Вы лежите, индуктор располагают над нужной зоной: ощущаются ритмичные подёргивания мышц. Затем насадку лазера плавно ведут над проблемным участком, чувствуется приятное тепло. Обе процедуры безболезненны, на время лазера выдают защитные очки.</p>
+              </div>
             </div>
           </article>
           <article class="dir-card reveal" data-proc="iglo">
@@ -230,6 +370,13 @@
               <h3>Иглоукалывание</h3>
               <p>Рефлексотерапия — в том числе в сочетании с лазером.</p>
               <div class="dir-card__foot"><span class="dir-card__price">1 500 ₽</span><button class="dir-card__more" type="button">Подробнее <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+              <div class="dir-card__info" hidden data-service="Иглоукалывание">
+                <p class="lead">Акупунктура: тонкие стерильные иглы вводят в определённые точки тела.</p>
+                <h4>Кому подходит</h4>
+                <ul><li>Боль в спине и шее</li><li>Мышечное напряжение</li><li>Головная боль напряжения</li></ul>
+                <h4>Как проходит</h4>
+                <p>Используются только одноразовые иглы. В точке может ощущаться лёгкое покалывание или распирание. Пока иглы установлены, вы спокойно лежите и отдыхаете.</p>
+              </div>
             </div>
           </article>
           <article class="dir-card reveal" data-proc="heel">
@@ -238,6 +385,13 @@
               <h3>Лечение пяточной шпоры</h3>
               <p>Курс процедур, подобранный специалистом после осмотра стопы.</p>
               <div class="dir-card__foot"><span class="dir-card__price">от 1 000 ₽</span><button class="dir-card__more" type="button">Подробнее <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+              <div class="dir-card__info" hidden data-service="Лечение пяточной шпоры">
+                <p class="lead">Для лечения применяется ударно-волновая терапия: акустические импульсы воздействуют на болезненную зону пятки, улучшают кровообращение и обменные процессы в тканях.</p>
+                <h4>Кому подходит</h4>
+                <ul><li>Пяточная шпора</li><li>Боль в пятке при ходьбе и нагрузке</li></ul>
+                <h4>Как проходит</h4>
+                <p>Насадку аппарата прикладывают к стопе через гель, ощущаются ритмичные толчки. Обычно назначают курс из нескольких сеансов с перерывами в несколько дней. Количество процедур определяет специалист.</p>
+              </div>
             </div>
           </article>
           <article class="dir-card reveal" data-proc="tape">
@@ -246,6 +400,13 @@
               <h3>Тейпирование</h3>
               <p>Кинезиотейпы для поддержки мышц и суставов в повседневной жизни и спорте.</p>
               <div class="dir-card__foot"><span class="dir-card__price">500 ₽</span><button class="dir-card__more" type="button">Подробнее <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+              <div class="dir-card__info" hidden data-service="Тейпирование">
+                <p class="lead">Кинезиотейпирование: на кожу наклеивают эластичные хлопковые ленты, которые поддерживают мышцы и суставы и при этом не сковывают движения.</p>
+                <h4>Кому подходит</h4>
+                <ul><li>Боль и нагрузка на суставы — колено, плечо, голеностоп</li><li>Мышечное напряжение и восстановление после травм</li><li>Поддержка во время тренировок и в повседневной жизни</li></ul>
+                <h4>Как проходит</h4>
+                <p>Специалист подбирает схему наложения под вашу задачу и наклеивает тейп на чистую сухую кожу. Процедура занимает 10–20 минут, тейп обычно носят несколько дней — он не мешает двигаться и принимать душ.</p>
+              </div>
             </div>
           </article>
         </div>
@@ -550,7 +711,7 @@
   <dialog class="proc-modal" id="proc-modal" aria-labelledby="pm-title">
     <div class="proc-modal__card">
       <button class="proc-modal__close" type="button" aria-label="Закрыть" data-pm-close><span></span><span></span></button>
-      <div class="proc-modal__img"><img src="" alt="" id="pm-img" /></div>
+      <div class="proc-modal__img"><img alt="" id="pm-img" decoding="async" /></div>
       <div class="proc-modal__body">
         <h3 id="pm-title"></h3>
         <span class="proc-modal__price" id="pm-price"></span>
@@ -568,6 +729,6 @@
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M4 9h16M9 3v4M15 3v4"/></svg>
   </a>
 
-  <script src="/assets/js/main.js?v=20261004m" defer></script>
+  <script src="/assets/js/main.js?v=20261005seo" defer></script>
 </body>
 </html>

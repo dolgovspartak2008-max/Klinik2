@@ -19,6 +19,13 @@ python3 -m http.server 8000
 - Часы работы на сайте не указаны.
 - Фото команды пока старые — заменить, когда будут в хорошем качестве.
 
+## SEO
+Основной адрес — `https://drgorshechnikov.ru` (без www; www → 301 в `vercel.json`). Домен прописан в: `index.html` (canonical, og:url, og:image, twitter:image, JSON-LD), `robots.txt`, `sitemap.xml`.
+- При правке контента обновить `<lastmod>` в `sitemap.xml`.
+- Описания процедур для окна «Подробнее» лежат в HTML карточек (`.dir-card__info`), а не в JS — так их видят поисковики.
+- Вопросы FAQ продублированы в JSON-LD (`FAQPage`) — при изменении вопросов править оба места.
+- Аватары в первом экране — миниатюры `assets/img/*-thumb.webp` (96×96).
+
 ## Дизайн и откат
 Тема «белый + индиго» (как в Instagram клиники) лежит в `assets/css/theme-indigo.css` и подключается после `style.css`.
 - Вернуть прежние цвета (золото/тёмно-синий): удалить строку с `theme-indigo.css` в `index.html`.
