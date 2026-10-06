@@ -1,3 +1,42 @@
+/* ---------- WhatsApp и маршрут: открываем приложения напрямую ---------- */
+(() => {
+  'use strict';
+  const WA_PHONE = '79930440619';
+  /* Точка входа: Салават, бульвар Салавата Юлаева, 29а (Дом Быта) — широта, долгота */
+  const CLINIC = '53.340891,55.936270';
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  /* Пробуем открыть приложение; если его нет — через 1,5 с уходим на веб-версию */
+  const tryApp = (appUrl, webUrl) => {
+    let left = false;
+    const onHide = () => { if (document.hidden) left = true; };
+    document.addEventListener('visibilitychange', onHide);
+    window.location.href = appUrl;
+    setTimeout(() => {
+      document.removeEventListener('visibilitychange', onHide);
+      if (!left && !document.hidden) window.location.href = webUrl;
+    }, 1500);
+  };
+
+  window.openWhatsApp = (text) => {
+    const q = text ? `&text=${encodeURIComponent(text)}` : '';
+    const web = `https://api.whatsapp.com/send?phone=${WA_PHONE}${q}`;
+    if (isMobile) tryApp(`whatsapp://send?phone=${WA_PHONE}${q}`, web);
+    else window.open(web, '_blank', 'noopener');
+  };
+
+  document.addEventListener('click', (e) => {
+    const wa = e.target.closest('a[data-wa]');
+    if (wa) { e.preventDefault(); window.openWhatsApp(''); return; }
+    const route = e.target.closest('.route-btn');
+    if (route && isMobile) {
+      e.preventDefault();
+      const r = `rtext=~${encodeURIComponent(CLINIC)}&rtt=auto`;
+      tryApp(`yandexmaps://maps.yandex.ru/?${r}`, `https://yandex.ru/maps/?${r}`);
+    }
+  });
+})();
+
 (() => {
   'use strict';
 
@@ -224,7 +263,7 @@
       comment ? `Комментарий: ${comment}` : ''
     ].filter(Boolean).join('\n');
 
-    window.open(`https://wa.me/79930440619?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+    window.openWhatsApp(text);
   });
 
   /* ---------- Year ---------- */
