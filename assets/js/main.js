@@ -40,6 +40,37 @@
 (() => {
   'use strict';
 
+  const body = document.body;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Intro ---------- */
+  const intro = document.getElementById('intro');
+  let introFinished = false;
+
+  const finishIntro = () => {
+    if (introFinished) return;
+    introFinished = true;
+    intro.classList.add('is-out');
+    body.classList.remove('is-loading');
+    // небольшой отступ, чтобы hero начинал анимацию вместе с раскрытием шторок
+    setTimeout(() => body.classList.add('is-ready'), 250);
+    setTimeout(() => intro.classList.add('is-done'), 1500);
+  };
+
+  if (reduceMotion) {
+    intro.classList.add('is-done');
+    body.classList.remove('is-loading');
+    body.classList.add('is-ready');
+    introFinished = true;
+  } else {
+    requestAnimationFrame(() => intro.classList.add('is-run'));
+    const minTime = new Promise((r) => setTimeout(r, 2100));
+    const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : window.addEventListener('load', r, { once: true })));
+    const maxTime = new Promise((r) => setTimeout(r, 4500));
+    Promise.race([Promise.all([minTime, loaded]), maxTime]).then(finishIntro);
+    intro.addEventListener('click', finishIntro);
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') finishIntro(); }, { once: true });
+  }
 
   /* ---------- Header state ---------- */
   const header = document.getElementById('header');
@@ -57,16 +88,24 @@
   const nav = document.getElementById('nav');
   const menu = document.getElementById('mmenu');
   const root = document.documentElement;
+  let menuTimer;
+  // цвет верхней/нижней панели браузера: при открытом меню — как у меню
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  const themeDefault = themeMeta ? themeMeta.content : '';
   const setMenu = (open) => {
+    clearTimeout(menuTimer);
     burger.setAttribute('aria-expanded', String(open));
     root.classList.toggle('menu-open', open);
+    if (themeMeta) themeMeta.content = open ? getComputedStyle(root).getPropertyValue('--navy-900').trim() || themeDefault : themeDefault;
     if (open) {
       menu.hidden = false;
       root.classList.add('is-locked');
+      requestAnimationFrame(() => requestAnimationFrame(() => menu.classList.add('is-open')));
       menu.querySelector('.mmenu__close').focus({ preventScroll: true });
     } else {
+      menu.classList.remove('is-open');
       root.classList.remove('is-locked');
-      menu.hidden = true;
+      menuTimer = setTimeout(() => { menu.hidden = true; }, reduceMotion ? 0 : 700);
       burger.focus({ preventScroll: true });
     }
   };
@@ -74,6 +113,26 @@
   menu.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', () => setMenu(false)));
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !menu.hidden) setMenu(false); });
   window.matchMedia('(min-width: 981px)').addEventListener('change', (e) => { if (e.matches && !menu.hidden) setMenu(false); });
+
+  /* ---------- Reveal on scroll ---------- */
+  const reveals = document.querySelectorAll('.reveal');
+  // лёгкая «лесенка» для элементов в одной сетке
+  document.querySelectorAll('.dir-grid, .team-grid, .faq__list, .principles').forEach((grid) => {
+    [...grid.children].forEach((el, i) => el.style.setProperty('--d', `${(i % 4) * 0.08}s`));
+  });
+  if ('IntersectionObserver' in window && !reduceMotion) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    reveals.forEach((el) => io.observe(el));
+  } else {
+    reveals.forEach((el) => el.classList.add('is-in'));
+  }
 
   /* ---------- Active nav link ---------- */
   const links = [...nav.querySelectorAll('a[href^="#"]')];
@@ -88,8 +147,42 @@
     sections.forEach((s) => navIO.observe(s));
   }
 
+  /* ---------- Parallax on hero photo ---------- */
+  const parallaxEls = document.querySelectorAll('[data-parallax]');
+  if (!reduceMotion && parallaxEls.length) {
+    let ticking = false;
+    const update = () => {
+      const y = window.scrollY;
+      parallaxEls.forEach((el) => {
+        if (y < window.innerHeight * 1.2) {
+          el.style.transform = `translateY(${y * parseFloat(el.dataset.parallax)}px)`;
+        }
+      });
+      ticking = false;
+    };
+    window.addEventListener('scroll', () => { if (!ticking) { requestAnimationFrame(update); ticking = true; } }, { passive: true });
+  }
+
+  /* ---------- Magnetic buttons ---------- */
+  if (!reduceMotion && window.matchMedia('(hover: hover)').matches) {
+    document.querySelectorAll('.magnetic').forEach((btn) => {
+      btn.addEventListener('mousemove', (e) => {
+        const r = btn.getBoundingClientRect();
+        const x = (e.clientX - r.left - r.width / 2) * 0.18;
+        const y = (e.clientY - r.top - r.height / 2) * 0.3;
+        btn.style.transform = `translate(${x}px, ${y}px)`;
+      });
+      btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+    });
+  }
+
   /* ---------- Tabs ---------- */
   const tabs = [...document.querySelectorAll('.tab')];
+  const ink = document.querySelector('.tabs__ink');
+  const moveInk = (tab) => {
+    ink.style.width = `${tab.offsetWidth}px`;
+    ink.style.transform = `translateX(${tab.offsetLeft}px)`;
+  };
   const activate = (tab, focus = false) => {
     tabs.forEach((t) => {
       const on = t === tab;
@@ -100,6 +193,7 @@
       panel.hidden = !on;
       panel.classList.toggle('is-active', on);
     });
+    moveInk(tab);
     if (focus) tab.focus();
   };
   tabs.forEach((tab, i) => {
@@ -112,6 +206,10 @@
       }
     });
   });
+  const initInk = () => moveInk(tabs.find((t) => t.classList.contains('is-active')));
+  initInk();
+  window.addEventListener('resize', initInk);
+  document.fonts && document.fonts.ready.then(initInk);
 
   /* ---------- Booking form ---------- */
   const form = document.getElementById('booking-form');
@@ -218,7 +316,7 @@
       root.classList.remove('is-locked');
       window.scrollTo({ top: savedY, behavior: 'instant' }); /* возвращаемся ровно туда, откуда открыли */
       if (after) after(); else if (opener) opener.focus({ preventScroll: true });
-    }, reduce ? 0 : 200);
+    }, reduce ? 0 : 350);
   };
   let pendingAfter = null;
   const close = (after) => {
