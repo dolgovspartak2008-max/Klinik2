@@ -31,3 +31,27 @@ python3 -m http.server 8000
 - Вернуть прежние цвета (золото/тёмно-синий): удалить строку с `theme-indigo.css` в `index.html`.
 - Вернуть сайт целиком к прежней версии: ветка `backup-gold-navy` на GitHub (или Instant Rollback в Vercel).
 Логотип GA: `assets/logo-ga.svg`, фавикон: `assets/favicon.svg`.
+
+## Онлайн-курсы и личный кабинет
+Раздел `/kursy/` (каталог, страница курса, плеер), `/kabinet/` (мои курсы, профиль) и `/admin/` (курсы, заказы, клиенты).
+Перенесены с сайта Физиотеры (репозиторий Klinik) и работают на **той же базе Supabase** `fiziotera` — аккаунты общие.
+
+```
+kursy/index.html, kurs.html, urok.html, usloviya/  — каталог, курс, плеер, условия
+kabinet/index.html, admin/index.html               — кабинет и админка (только вкладки курсов)
+politika.html                                      — политика конфиденциальности (ИП Горшечников)
+assets/js/config.js       — ключ Supabase (публичный), реквизиты, coursesOnly: кабинет без скидок Физиотеры
+assets/js/sb.js, account.js, kabinet.js, courses.js, player.js, my-courses.js, admin.js, admin-courses.js, legal.js
+assets/css/cab-base.css   — оформление страниц кабинета (с сайта Физиотеры), cab-theme.css — цвета индиго и модули
+supabase/migrations/      — изменения базы, применённые 12.11.2026 (модули уроков, курс «Здоровые суставы и спина»)
+supabase/functions/       — актуальные исходники функций account и courses (задеплоены в проект fiziotera)
+```
+`vercel.json`: прокси `/sb/*` → Supabase, адреса `/kursy/<курс>/` и `/kursy/<курс>/uroki/`.
+
+**Модули.** У урока есть поле «Модуль» (админка → Курсы → урок → Изменить). Уроки с одинаковым модулем
+показываются одной группой «Модуль 1. Плечи…» в порядке уроков.
+
+**Оплата.** Пока вручную: клиент оформляет заказ, администратор после оплаты нажимает «Оплата получена» в админке.
+
+**Видео.** Планируется хранение в Cloudflare R2 вместо Supabase Storage — меняется только функция `courses`
+(подписанные ссылки на просмотр и загрузку). Пока функция работает с бакетом Supabase `course-videos`.

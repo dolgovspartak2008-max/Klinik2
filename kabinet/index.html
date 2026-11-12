@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Личный кабинет — Кабинет здоровья доктора Горшечникова</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#19155a" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" href="/icon-192.png" type="image/png" sizes="96x96" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/cab-base.css" />
+  <link rel="stylesheet" href="/assets/css/account.css" />
+  <link rel="stylesheet" href="/assets/css/courses.css" />
+  <link rel="stylesheet" href="/assets/css/cab-theme.css" />
+</head>
+<body class="cab-page">
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+
+  <header class="header is-scrolled cab-header">
+    <div class="container header__inner">
+      <a href="/" class="logo" aria-label="Кабинет здоровья доктора Горшечникова — на главную">
+        <img class="logo__mark" src="/assets/logo-ga.svg" alt="" width="44" height="44" />
+        <span class="logo__text">Кабинет здоровья<small>Личный кабинет</small></span>
+      </a>
+      <nav class="cab-header__nav" aria-label="Кабинет">
+        <a class="cab-header__link" href="/">На главную</a>
+        <a class="cab-header__link" href="/kursy/">Курсы</a>
+        <a class="cab-header__link" href="/admin/" data-admin-link hidden>Админ-панель</a>
+        <button class="cab-header__link" type="button" data-signout hidden>Выйти</button>
+      </nav>
+      <a class="btn btn--primary btn--sm" href="/#booking">Записаться</a>
+    </div>
+  </header>
+
+  <main id="main" class="cab" aria-busy="true">
+    <div class="container">
+      <!-- Загрузка -->
+      <div class="cab-state" data-state="loading">
+        <span class="cab-spinner" aria-hidden="true"></span>
+        <p>Загружаем кабинет…</p>
+      </div>
+
+      <!-- Не вошли -->
+      <section class="cab-state cab-guest" data-state="guest" hidden aria-labelledby="guestTitle">
+        <h1 id="guestTitle">Личный кабинет</h1>
+        <p>Здесь хранятся ваши онлайн-курсы. Войдите или зарегистрируйтесь — это займёт минуту.</p>
+        <div class="cab-guest__actions">
+          <button class="btn btn--accent btn--lg" type="button" data-open-auth="register">Зарегистрироваться</button>
+          <button class="btn btn--outline btn--lg" type="button" data-open-auth="login">Войти</button>
+        </div>
+      </section>
+
+      <!-- Новый пароль (переход по ссылке восстановления) -->
+      <section class="cab-state cab-guest" data-state="reset" hidden aria-labelledby="resetTitle">
+        <h1 id="resetTitle">Новый пароль</h1>
+        <form class="acc-form cab-narrow" data-reset-form novalidate>
+          <label class="field"><span>Новый пароль <small>— от 8 символов, буквы и цифры</small></span>
+            <input name="password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required /></label>
+          <label class="field"><span>Повторите пароль</span>
+            <input name="password2" type="password" autocomplete="new-password" minlength="8" maxlength="72" required /></label>
+          <button class="btn btn--primary btn--lg acc-submit" type="submit">Сохранить пароль</button>
+          <p class="acc-status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <!-- Ошибка -->
+      <section class="cab-state cab-guest" data-state="error" hidden>
+        <h1>Не удалось открыть кабинет</h1>
+        <p data-error-text></p>
+        <div class="cab-guest__actions"><button class="btn btn--primary" type="button" data-reload>Обновить</button></div>
+      </section>
+
+      <!-- Имя (обязательно, в т.ч. после входа через Telegram) -->
+      <section class="cab-state cab-guest" data-state="name" hidden aria-labelledby="nameTitle">
+        <h1 id="nameTitle">Как к вам обращаться?</h1>
+        <p>Напишите ваше имя — так мы будем обращаться к вам в уведомлениях о курсах.</p>
+        <form class="acc-form cab-narrow" data-name-form novalidate>
+          <label class="field"><span>Имя <small>— можно с фамилией</small></span>
+            <input name="name" type="text" maxlength="60" autocomplete="name" placeholder="Например, Анна" required /></label>
+          <button class="btn btn--primary btn--lg acc-submit" type="submit">Продолжить</button>
+          <p class="acc-status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <!-- Кабинет -->
+      <div data-state="dashboard" hidden>
+        <section class="cab-hero cab-hero--me" aria-labelledby="helloTitle">
+          <div class="cab-me">
+            <span class="cab-avatar" data-avatar aria-hidden="true"></span>
+            <div class="cab-me__text">
+              <h1 id="helloTitle" data-hello>Здравствуйте!</h1>
+              <p class="cab-hero__meta" data-client-no></p>
+              <p class="cab-since" data-since hidden></p>
+            </div>
+          </div>
+        </section>
+
+        <section class="cab-block" id="courses" aria-labelledby="coursesTitle" data-my-courses-block>
+          <h2 id="coursesTitle">Мои курсы</h2>
+          <div class="my-courses" data-my-courses><div class="crs-skel" style="height:96px"></div></div>
+          <div data-my-orders-wrap hidden>
+            <h3>Заказы</h3>
+            <div class="my-orders" data-my-orders></div>
+          </div>
+          <details class="cab-details" data-gift-block>
+            <summary>Активировать подарочный код</summary>
+            <form class="cab-inline" data-gift-form novalidate>
+              <label class="field"><span class="sr-only">Подарочный код</span>
+                <input name="code" type="text" maxlength="14" autocomplete="off" autocapitalize="characters" placeholder="FZG-XXXX-XXXX" required /></label>
+              <button class="btn btn--primary acc-submit" type="submit">Активировать</button>
+            </form>
+            <p class="acc-status" role="status" aria-live="polite" data-gift-status></p>
+          </details>
+          <label class="check cab-news">
+            <input type="checkbox" data-course-news />
+            <span><b>Сообщать о новых уроках</b><small>Пришлём уведомление в Telegram, когда в ваших курсах появится новый урок.</small></span>
+          </label>
+        </section>
+
+        <section class="cab-block cab-profile" id="profile" aria-labelledby="profileTitle">
+          <h2 id="profileTitle">Мой профиль</h2>
+          <div class="cab-profile__grid">
+            <form class="acc-form" data-profile-form novalidate>
+              <label class="field"><span>Имя</span><input name="name" type="text" maxlength="60" autocomplete="name" required /></label>
+              <label class="field"><span>Телефон</span><input name="phone" type="tel" inputmode="tel" maxlength="20" autocomplete="tel" placeholder="+7 (___) ___-__-__" /></label>
+              <p class="cab-muted cab-small" data-phone-hint>По телефону мы свяжемся с вами по заказу курса.</p>
+              <button class="btn btn--primary acc-submit" type="submit">Сохранить</button>
+              <p class="acc-status" role="status" aria-live="polite"></p>
+            </form>
+
+            <div class="cab-profile__side">
+              <dl class="cab-dl">
+                <div><dt>Номер клиента</dt><dd data-client-no-dd>—</dd></div>
+                <div><dt>Дата регистрации</dt><dd data-reg-date>—</dd></div>
+                <div><dt>Email</dt><dd data-email>—</dd></div>
+                <div><dt>Telegram</dt><dd data-telegram>—</dd></div>
+              </dl>
+              <button class="btn btn--tg btn--sm" type="button" data-link-tg hidden>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4 3 11l6 2 2 6 3-4 5 4Z"/></svg>Привязать Telegram</button>
+
+              <label class="check cab-news">
+                <input type="checkbox" data-news />
+                <span><b>Новости и акции в Telegram</b><small data-news-hint>Изредка присылаем новости и акции. Отписаться можно в любой момент.</small></span>
+              </label>
+
+              <details class="cab-details" data-email-block hidden>
+                <summary>Добавить вход по email и паролю</summary>
+                <form class="acc-form" data-email-form novalidate>
+                  <label class="field"><span>Email</span><input name="email" type="email" autocomplete="email" maxlength="254" required /></label>
+                  <label class="field"><span>Пароль <small>— от 8 символов, буквы и цифры</small></span><input name="password" type="password" autocomplete="new-password" maxlength="72" required /></label>
+                  <button class="btn btn--primary acc-submit" type="submit">Добавить</button>
+                  <p class="acc-status" role="status" aria-live="polite"></p>
+                </form>
+                <form class="acc-form" data-email-code-form novalidate hidden>
+                  <p class="cab-muted" data-email-code-lead></p>
+                  <label class="field"><span>Код из письма</span><input name="code" class="acc-otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required /></label>
+                  <button class="btn btn--primary acc-submit" type="submit">Подтвердить email</button>
+                  <p class="acc-status" role="status" aria-live="polite"></p>
+                  <button class="acc-link" type="button" data-email-back>← Изменить email</button>
+                </form>
+              </details>
+
+              <div class="cab-profile__actions">
+                <button class="acc-link" type="button" data-signout>Выйти из аккаунта</button>
+                <button class="acc-link acc-link--danger" type="button" data-delete>Удалить аккаунт</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/sb.js"></script>
+  <script src="/assets/js/account.js"></script>
+  <script src="/assets/js/kabinet.js"></script>
+  <script src="/assets/js/courses.js"></script>
+  <script src="/assets/js/my-courses.js"></script>
+</body>
+</html>

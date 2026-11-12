@@ -204,3 +204,9 @@ html.is-locked { background: var(--navy-900); }
 .float-card--offer .float-card__num { color: #fff; font-size: 38px; }
 .float-card--offer small { color: rgba(255,255,255,.88); font-weight: 600; line-height: 1.25; display: block; margin-top: 4px; }
 @media (max-width: 680px) { .float-card--offer .float-card__num { font-size: 28px; } .float-card--offer small { font-size: 11.5px; } }
+
+/* ---------- Шапка: добавлен пункт «Курсы» — пункты не переносятся ---------- */
+.nav a, .header__phone span, .header__phone small { white-space: nowrap; }
+@media (max-width: 1360px) { .nav { gap: 18px; } }
+@media (max-width: 1279px) { .header__phone { display: none; } }
+@media (max-width: 1120px) { .nav { gap: 12px; font-size: 13.5px; } .header__cta { white-space: nowrap; } }

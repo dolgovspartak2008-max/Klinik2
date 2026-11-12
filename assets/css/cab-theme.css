@@ -1,0 +1,36 @@
+/* Страницы онлайн-курсов, кабинета и админки в цветах сайта (белый + индиго).
+   cab-base.css — оформление этих страниц, перенесённое с сайта Физиотеры; здесь только цвета. */
+:root {
+  --indigo-950: #0c0a2b;
+  --indigo-900: #19155a;
+  --indigo-800: #27207f;
+  --indigo-700: #3b33b8;
+  --indigo-600: #463ee6;
+  --indigo-400: #a9a5ff;
+  --indigo-200: #d6d4ff;
+  --indigo-100: #e9e7fe;
+  --indigo-50:  #f4f3ff;
+  --accent: #5952fb;
+  --accent-dark: #463ee6;
+  --teal: #a9a5ff;
+  --teal-soft: #f4f3ff;
+  --ink: #15133a;
+  --ink-soft: #5e5c7a;
+  --shadow-soft: 0 20px 50px -24px rgba(25, 21, 90, .3);
+  --shadow-card: 0 1px 0 rgba(255,255,255,.8) inset, 0 18px 40px -26px rgba(25, 21, 90, .4);
+}
+::selection { background: rgba(89, 82, 251, .2); }
+.logo__mark { object-fit: contain; }
+.logo__text { font-weight: 800; }
+
+/* Модули курса */
+.crs-modules { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 22px; }
+.crs-module__title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; font-size: 18px; margin: 0 0 10px; color: var(--indigo-900); }
+.crs-module__title span { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.crs-module__title small { font-size: 13px; font-weight: 500; color: var(--ink-soft); }
+.crs-module .crs-lessons { margin-top: 0; }
+.ply-module { list-style: none; padding: 14px 6px 6px; font-weight: 800; color: var(--indigo-900); font-size: 14px; }
+.ply-module:first-child { padding-top: 2px; }
+.ply-module span { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.adm-module { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--indigo-50); color: var(--accent-dark); font-size: 12px; font-weight: 700; margin-right: 4px; }
+.cab-hero--me + .cab-block { margin-top: 18px; }

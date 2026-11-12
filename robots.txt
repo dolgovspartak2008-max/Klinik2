@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /kabinet/
+Disallow: /admin/
+Disallow: /sb/
 
 Sitemap: https://www.drgorshechnikov.ru/sitemap.xml

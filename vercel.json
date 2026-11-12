@@ -31,6 +31,67 @@
           "value": "strict-origin-when-cross-origin"
         }
       ]
+    },
+    {
+      "source": "/(kabinet|admin)(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/kursy/:slug/uroki(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/sb/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/sb/:path*",
+      "destination": "https://ppujswqovhembshvaxff.supabase.co/:path*"
+    },
+    {
+      "source": "/kursy/:slug([a-z0-9-]+)/uroki",
+      "destination": "/kursy/urok.html"
+    },
+    {
+      "source": "/kursy/:slug([a-z0-9-]+)/uroki/",
+      "destination": "/kursy/urok.html"
+    },
+    {
+      "source": "/kursy/:slug([a-z0-9-]+)",
+      "destination": "/kursy/kurs.html"
+    },
+    {
+      "source": "/kursy/:slug([a-z0-9-]+)/",
+      "destination": "/kursy/kurs.html"
     }
   ]
 }
