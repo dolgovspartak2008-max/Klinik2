@@ -85,7 +85,7 @@
   "rewrites": [
     {
       "source": "/neon-auth/:path*",
-      "destination": "https://ep-spring-paper-b960l5u6.neonauth.c-7.eu-central-1.aws.neon.tech/neondb/auth/:path*"
+      "destination": "/api/neon-auth?path=:path*"
     },
     {
       "source": "/kursy/:slug([a-z0-9-]+)/uroki",
@@ -103,5 +103,8 @@
       "source": "/kursy/:slug([a-z0-9-]+)/",
       "destination": "/kursy/kurs.html"
     }
+  ],
+  "regions": [
+    "fra1"
   ]
 }
