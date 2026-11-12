@@ -13,6 +13,8 @@
 // Ключ service_role есть только здесь (окружение Supabase); в браузер он не попадает.
 
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
+import { AwsClient } from "npm:aws4fetch@1.0.20";
+import { createR2Storage, parseVideoPath, storedR2Path } from "./r2-storage.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -20,6 +22,11 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const VIDEO_BUCKET = "course-videos";
 const MEDIA_BUCKET = "course-media";
 const URL_TTL = 600; // секунд: ссылка на видео живёт 10 минут, потом плеер запрашивает новую
+const UPLOAD_URL_TTL = 3600;
+const R2_ACCOUNT_ID = Deno.env.get("R2_ACCOUNT_ID") || "";
+const R2_ACCESS_KEY_ID = Deno.env.get("R2_ACCESS_KEY_ID") || "";
+const R2_SECRET_ACCESS_KEY = Deno.env.get("R2_SECRET_ACCESS_KEY") || "";
+const R2_BUCKET = Deno.env.get("R2_BUCKET") || "";
 const PUBLIC_PREFIX = "/sb/storage/v1/object/public/" + MEDIA_BUCKET + "/";
 const DEFAULT_MAIL_USER = "fizioteraufa@gmail.com";
 const ALLOWED_ORIGINS = new Set([
@@ -28,6 +35,7 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 
 const db = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+let r2Storage: ReturnType<typeof createR2Storage> | null = null;
 
 class HttpError extends Error {
   constructor(public status: number, public code: string, public extra: Record<string, unknown> = {}) { super(code); }
@@ -114,6 +122,24 @@ function rnd(n = 16): string {
   return Array.from(a).map((b) => "abcdefghijkmnpqrstuvwxyz23456789"[b % 32]).join("");
 }
 
+function r2() {
+  if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET) {
+    throw new HttpError(503, "r2_not_configured");
+  }
+  if (!r2Storage) {
+    const signer = new AwsClient({
+      service: "s3", region: "auto", accessKeyId: R2_ACCESS_KEY_ID, secretAccessKey: R2_SECRET_ACCESS_KEY,
+    });
+    r2Storage = createR2Storage({ accountId: R2_ACCOUNT_ID, bucket: R2_BUCKET }, signer);
+  }
+  return r2Storage;
+}
+
+function videoLocation(value: string) {
+  try { return parseVideoPath(value); }
+  catch { throw new HttpError(503, "video_unavailable"); }
+}
+
 // ------------------------------------------------------------------ просмотр
 
 async function play(req: Request, body: Record<string, unknown>) {
@@ -130,14 +156,19 @@ async function play(req: Request, body: Record<string, unknown>) {
     if (r.error === "other_device") throw new HttpError(409, "other_device", { since: r.since, device_hint: r.device_hint });
     throw new HttpError(r.error === "rate_limited" ? 429 : 403, r.error || "no_access");
   }
-  const { data: signed, error: e2 } = await db.storage.from(VIDEO_BUCKET).createSignedUrl(r.video_path!, URL_TTL);
+  const location = videoLocation(r.video_path!);
+  if (location.provider === "r2") {
+    const url = await r2().signGet(location.key, URL_TTL);
+    return { ok: true, session_id: r.session_id, url, expires_in: URL_TTL };
+  }
+  const { data: signed, error: e2 } = await db.storage.from(VIDEO_BUCKET).createSignedUrl(location.key, URL_TTL);
   if (e2 || !signed?.signedUrl) throw new HttpError(503, "video_unavailable");
   return { ok: true, session_id: r.session_id, url: viaProxy(signed.signedUrl), expires_in: URL_TTL };
 }
 
 // ------------------------------------------------------------------ админ: загрузка
 
-const VIDEO_MAX = 50 * 1024 * 1024; // лимит файла на тарифе Supabase Free
+const VIDEO_MAX = 5 * 1024 * 1024 * 1024 - 5 * 1024 * 1024; // предел одной загрузки R2: 4.995 GiB
 const IMAGE_MAX = 5 * 1024 * 1024;
 const IMAGE_TYPES: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 
@@ -150,7 +181,9 @@ async function adminUploadUrl(req: Request, body: Record<string, unknown>) {
   if (kind === "video") {
     if (body.content_type !== "video/mp4") throw new HttpError(400, "video_format");
     if (size <= 0 || size > VIDEO_MAX) throw new HttpError(400, "video_too_big");
-    bucket = VIDEO_BUCKET; path = `lessons/${target}/${rnd(20)}.mp4`;
+    const key = `lessons/${target}/${rnd(20)}.mp4`;
+    const upload = await r2().signPut(key, "video/mp4", UPLOAD_URL_TTL);
+    return { ok: true, path: storedR2Path(key), ...upload };
   } else if (kind === "image") {
     const ext = IMAGE_TYPES[String(body.content_type)];
     if (!ext) throw new HttpError(400, "image_format");
@@ -168,17 +201,24 @@ async function adminAttachVideo(req: Request, body: Record<string, unknown>) {
   const admin = await requireAdmin(req);
   const lesson = uuid(body.lesson_id);
   const path = str(body.path, 200);
-  const { data: info } = await db.storage.from(VIDEO_BUCKET).list(`lessons/${lesson}`, { search: path.split("/").pop() });
-  const obj = (info || []).find((o) => `lessons/${lesson}/${o.name}` === path);
-  if (!obj) throw new HttpError(400, "file_missing");
-  const size = Number((obj.metadata as Record<string, unknown> | null)?.size) || Number(body.size) || null;
+  let location;
+  try { location = parseVideoPath(path); } catch { throw new HttpError(400, "bad_path"); }
+  if (location.provider !== "r2" || !new RegExp(`^lessons/${lesson}/[a-z0-9]{20}\\.mp4$`).test(location.key)) {
+    throw new HttpError(400, "bad_path");
+  }
+  if (!(await r2().exists(location.key))) throw new HttpError(400, "file_missing");
+  const size = Number(body.size) || null;
   const dur = Math.round(Number(body.duration) || 0);
   const { data, error } = await db.rpc("svc_lesson_set_video", {
     p_admin: admin, p_lesson: lesson, p_path: path, p_size: size, p_duration: dur > 0 && dur < 36000 ? dur : null, p_poster: null,
   });
-  if (error) { await db.storage.from(VIDEO_BUCKET).remove([path]); dbError(error); }
+  if (error) { await r2().remove(location.key); dbError(error); }
   const old = (data as { old_path?: string | null }).old_path;
-  if (old && old !== path) await db.storage.from(VIDEO_BUCKET).remove([old]);
+  if (old && old !== path) {
+    const previous = videoLocation(old);
+    // Старый файл Supabase оставляем как проверенный откат до окончания миграции.
+    if (previous.provider === "r2") await r2().remove(previous.key);
+  }
   return { ok: true };
 }
 
@@ -207,7 +247,11 @@ async function adminLessonDelete(req: Request, body: Record<string, unknown>) {
   const { data, error } = await asUser.rpc("admin_lesson_delete", { p_id: uuid(body.lesson_id) });
   if (error) dbError(error);
   const path = (data as { video_path?: string | null }).video_path;
-  if (path) await db.storage.from(VIDEO_BUCKET).remove([path]);
+  if (path) {
+    const location = videoLocation(path);
+    if (location.provider === "r2") await r2().remove(location.key);
+    else await db.storage.from(VIDEO_BUCKET).remove([location.key]);
+  }
   return { ok: true };
 }
 

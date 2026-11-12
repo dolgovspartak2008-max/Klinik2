@@ -5,8 +5,8 @@
  */
 (function () {
   "use strict";
-  var doc = document, SB = window.SB, A = window.FZAdmin, C = window.FZC;
-  if (!SB || !A || !C) return;
+  var doc = document, SB = window.SB, A = window.FZAdmin, C = window.FZC, U = window.FZStorageUpload;
+  if (!SB || !A || !C || !U) return;
   var esc = C.esc, money = C.money;
 
   function $(s, r) { return (r || doc).querySelector(s); }
@@ -71,20 +71,6 @@
   }
 
   // ---------------------------------------------------------------- загрузка файлов прямо в хранилище
-  function putFile(url, file, onProgress) {
-    return new Promise(function (resolve, reject) {
-      var x = new XMLHttpRequest();
-      x.open("PUT", url);
-      x.setRequestHeader("x-upsert", "false");
-      x.upload.onprogress = function (e) { if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total); };
-      x.onload = function () { x.status >= 200 && x.status < 300 ? resolve() : reject(new Error("upload " + x.status)); };
-      x.onerror = function () { reject(new Error("network")); };
-      var fd = new FormData();
-      fd.append("cacheControl", "3600");
-      fd.append("", file);
-      x.send(fd);
-    });
-  }
   function videoDuration(file) {
     return new Promise(function (resolve) {
       var v = doc.createElement("video"), u = URL.createObjectURL(file);
@@ -98,13 +84,15 @@
     var ct = file.type || (kind === "video" ? "video/mp4" : "");
     return SB.courses("admin_upload_url", { kind: kind, target_kind: targetKind, target_id: targetId, content_type: ct, size: file.size })
       .then(function (u) {
-        // сначала напрямую в Supabase, при недоступности — через прокси сайта
-        return putFile(u.url, file, onProgress).catch(function () { return putFile(u.proxy_url, file, onProgress); }).then(function () { return u.path; });
+        return U.putFile(u.url, file, onProgress, u).catch(function (e) {
+          if (!u.proxy_url) throw e;
+          return U.putFile(u.proxy_url, file, onProgress, u);
+        }).then(function () { return u.path; });
       });
   }
   function uploadVideo(lessonId, file, status) {
     if (file.type && file.type !== "video/mp4") return Promise.reject({ message: SB.message("video_format") });
-    if (file.size > 50 * 1024 * 1024) return Promise.reject({ message: SB.message("video_too_big") });
+    if (file.size > U.MAX_VIDEO_BYTES) return Promise.reject({ message: SB.message("video_too_big") });
     var dur = 0;
     return videoDuration(file).then(function (d) { dur = d; return upload("video", "lesson", lessonId, file, function (p) { status.textContent = "Загрузка: " + Math.round(p * 100) + "%"; }); })
       .then(function (path) { status.textContent = "Сохраняем…"; return SB.courses("admin_attach_video", { lesson_id: lessonId, path: path, size: file.size, duration: dur }); });
