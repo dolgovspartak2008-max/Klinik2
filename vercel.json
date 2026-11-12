@@ -89,19 +89,19 @@
     },
     {
       "source": "/kursy/:slug([a-z0-9-]+)/uroki",
-      "destination": "/kursy/urok.html"
+      "destination": "/kursy/urok"
     },
     {
       "source": "/kursy/:slug([a-z0-9-]+)/uroki/",
-      "destination": "/kursy/urok.html"
+      "destination": "/kursy/urok"
     },
     {
       "source": "/kursy/:slug([a-z0-9-]+)",
-      "destination": "/kursy/kurs.html"
+      "destination": "/kursy/kurs"
     },
     {
       "source": "/kursy/:slug([a-z0-9-]+)/",
-      "destination": "/kursy/kurs.html"
+      "destination": "/kursy/kurs"
     }
   ],
   "regions": [

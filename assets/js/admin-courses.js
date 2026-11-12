@@ -395,7 +395,7 @@
     else if ((t = e.target.closest("[data-c-edit]"))) openCourse(t.getAttribute("data-c-edit"));
     else if ((t = e.target.closest("[data-c-status]"))) {
       var to = t.getAttribute("data-c-status");
-      if (to === "archived" && !confirm("Снять курс с продажи? Купившие сохранят доступ, открытые заказы будут отменены.")) return;
+      if (to === "archived" && !confirm("Снять курс с продажи? Купившие сохранят доступ.")) return;
       SB.rpc("admin_course_set_status", { p_id: t.getAttribute("data-id"), p_status: to })
         .then(function () { toast("Статус изменён"); openCourse(t.getAttribute("data-id")); loadCourses(); }).catch(fail);
     }
