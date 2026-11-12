@@ -267,6 +267,10 @@
       return authCall("/request-password-reset", { method: "POST", body: { email: body.email, redirectTo: here } })
         .then(function () { return { mail: true, status: "email_sent" }; });
     }
+    if (action === "verify_email_code") {
+      return authCall("/email-otp/verify-email", { method: "POST", body: { email: body.email, otp: body.code } })
+        .then(function () { jwt = null; return refresh(); }).then(function () { return { ok: true }; });
+    }
     if (action === "verify_email") {
       return authCall("/send-verification-email", { method: "POST", body: { email: body.email, callbackURL: location.origin + "/admin/" } })
         .then(function () { return { ok: true }; });

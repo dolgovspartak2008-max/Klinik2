@@ -26,9 +26,25 @@
     if (v) {
       v.disabled = true;
       SB.account("verify_email", { email: v.getAttribute("data-send-verify") })
-        .then(function () { v.textContent = "Письмо отправлено — откройте ссылку из него"; })
+        .then(function () {
+          v.hidden = true;
+          var f = doc.querySelector("[data-verify-form]");
+          if (f) { f.hidden = false; f.elements.code.focus(); }
+        })
         .catch(function (err) { v.disabled = false; v.textContent = err.message; });
     }
+  });
+
+  doc.addEventListener("submit", function (event) {
+    var f = event.target.closest("[data-verify-form]");
+    if (!f) return;
+    event.preventDefault();
+    var code = String(f.elements.code.value || "").replace(/\s+/g, ""), st = f.querySelector(".acc-status");
+    if (!/^[0-9]{4,10}$/.test(code)) { st.textContent = "Введите код из письма."; return; }
+    f.querySelector("button").disabled = true;
+    SB.account("verify_email_code", { email: f.getAttribute("data-verify-form"), code: code })
+      .then(function () { location.reload(); })
+      .catch(function (err) { f.querySelector("button").disabled = false; st.textContent = err.code === "code_expired" ? "Код неверный или устарел. Запросите новый." : err.message; });
   });
 
   function denied(text, html) {
@@ -46,8 +62,10 @@
       SB.rpc("my_dashboard").then(function (d) {
         var email = (d && d.profile && d.profile.email) || "";
         denied("", "Чтобы открыть админ-панель, подтвердите email <b>" + email.replace(/[<>&"]/g, "") + "</b>.<br>" +
-          '<button class="btn btn--primary" type="button" data-send-verify="' + email.replace(/[<>&"]/g, "") + '">Отправить письмо для подтверждения</button>' +
-          "<br><small>После подтверждения выйдите и войдите снова.</small>");
+          '<button class="btn btn--primary" type="button" data-send-verify="' + email.replace(/[<>&"]/g, "") + '">Получить код на почту</button>' +
+          '<form class="acc-form cab-narrow" data-verify-form="' + email.replace(/[<>&"]/g, "") + '" hidden novalidate>' +
+          '<label class="field"><span>Код из письма</span><input name="code" class="acc-otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" required /></label>' +
+          '<button class="btn btn--primary acc-submit" type="submit">Подтвердить</button><p class="acc-status" role="status" aria-live="polite"></p></form>');
       }).catch(function () { denied(SB.message("email_not_verified")); });
       return;
     }
