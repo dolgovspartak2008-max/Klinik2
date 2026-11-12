@@ -107,19 +107,6 @@
             <h3>Заказы</h3>
             <div class="my-orders" data-my-orders></div>
           </div>
-          <details class="cab-details" data-gift-block>
-            <summary>Активировать подарочный код</summary>
-            <form class="cab-inline" data-gift-form novalidate>
-              <label class="field"><span class="sr-only">Подарочный код</span>
-                <input name="code" type="text" maxlength="14" autocomplete="off" autocapitalize="characters" placeholder="FZG-XXXX-XXXX" required /></label>
-              <button class="btn btn--primary acc-submit" type="submit">Активировать</button>
-            </form>
-            <p class="acc-status" role="status" aria-live="polite" data-gift-status></p>
-          </details>
-          <label class="check cab-news">
-            <input type="checkbox" data-course-news />
-            <span><b>Сообщать о новых уроках</b><small>Пришлём уведомление в Telegram, когда в ваших курсах появится новый урок.</small></span>
-          </label>
         </section>
 
         <section class="cab-block cab-profile" id="profile" aria-labelledby="profileTitle">
@@ -138,32 +125,12 @@
                 <div><dt>Номер клиента</dt><dd data-client-no-dd>—</dd></div>
                 <div><dt>Дата регистрации</dt><dd data-reg-date>—</dd></div>
                 <div><dt>Email</dt><dd data-email>—</dd></div>
-                <div><dt>Telegram</dt><dd data-telegram>—</dd></div>
               </dl>
-              <button class="btn btn--tg btn--sm" type="button" data-link-tg hidden>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4 3 11l6 2 2 6 3-4 5 4Z"/></svg>Привязать Telegram</button>
 
-              <label class="check cab-news">
-                <input type="checkbox" data-news />
-                <span><b>Новости и акции в Telegram</b><small data-news-hint>Изредка присылаем новости и акции. Отписаться можно в любой момент.</small></span>
-              </label>
 
-              <details class="cab-details" data-email-block hidden>
-                <summary>Добавить вход по email и паролю</summary>
-                <form class="acc-form" data-email-form novalidate>
-                  <label class="field"><span>Email</span><input name="email" type="email" autocomplete="email" maxlength="254" required /></label>
-                  <label class="field"><span>Пароль <small>— от 8 символов, буквы и цифры</small></span><input name="password" type="password" autocomplete="new-password" maxlength="72" required /></label>
-                  <button class="btn btn--primary acc-submit" type="submit">Добавить</button>
-                  <p class="acc-status" role="status" aria-live="polite"></p>
-                </form>
-                <form class="acc-form" data-email-code-form novalidate hidden>
-                  <p class="cab-muted" data-email-code-lead></p>
-                  <label class="field"><span>Код из письма</span><input name="code" class="acc-otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required /></label>
-                  <button class="btn btn--primary acc-submit" type="submit">Подтвердить email</button>
-                  <p class="acc-status" role="status" aria-live="polite"></p>
-                  <button class="acc-link" type="button" data-email-back>← Изменить email</button>
-                </form>
-              </details>
+
+
+
 
               <div class="cab-profile__actions">
                 <button class="acc-link" type="button" data-signout>Выйти из аккаунта</button>
@@ -180,7 +147,6 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="/assets/js/config.js"></script>
-  <script src="/assets/js/neon-auth.js"></script>
   <script src="/assets/js/sb.js"></script>
   <script src="/assets/js/account.js"></script>
   <script src="/assets/js/kabinet.js"></script>

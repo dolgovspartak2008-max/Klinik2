@@ -7,8 +7,13 @@ export function json(res, status, body) {
 }
 
 export function fail(res, error) {
-  const code = /^[a-z_]{3,40}$/.test(String(error?.message || "")) ? error.message : "server_error";
-  json(res, Number(error?.status) || 500, { error: code });
+  const known = /^[a-z_]{3,40}$/.test(String(error?.message || ""));
+  const code = known ? error.message : "server_error";
+  if (!known) console.error("api error", error?.message || error);
+  const body = { error: code };
+  // безопасные подробности для клиента (например, other_device)
+  if (known && error.extra && typeof error.extra === "object") Object.assign(body, error.extra);
+  json(res, known ? Number(error?.status) || 400 : 500, body);
 }
 
 export function method(req, res) {

@@ -119,7 +119,7 @@
     buy.hidden = false; doc.body.classList.add("has-modal");
     loadQuote(null).catch(function (e) {
       buyStatus(e.message, false);
-      if (e.code === "already_owned" && !ctx.gift) { f.elements.gift.checked = true; buyCtx.gift = true; loadQuote(null).then(function () { buyStatus("Этот курс у вас уже есть — можно купить его в подарок.", true); }).catch(function () {}); }
+      if (e.code === "already_owned") buyStatus("Этот курс уже есть в вашем кабинете.", true);
     });
     setTimeout(function () { var x = $("[data-buy-close]", buy); if (x) x.focus(); }, 50);
   }
@@ -165,7 +165,7 @@
     $("[data-done-no]", buy).textContent = "Заказ № " + o.order_no + " · " + money(o.total);
     var text = paid
       ? (o.is_gift ? "Подарочный код — в разделе «Мои курсы» в личном кабинете. Передайте его получателю." : "Курс уже в разделе «Мои курсы». Можно начинать заниматься.")
-      : "Онлайн-оплата на сайте скоро появится. Сейчас администратор клиники свяжется с вами и подскажет, как оплатить. Чтобы ускорить, напишите нам — номер заказа уже в сообщении. Доступ откроется автоматически, как только оплата будет подтверждена; мы пришлём уведомление в Telegram" + (o.is_gift ? " вместе с подарочным кодом." : ".");
+      : "Онлайн-оплата на сайте скоро появится. Сейчас администратор клиники свяжется с вами и подскажет, как оплатить. Чтобы ускорить, напишите нам — номер заказа уже в сообщении. Доступ откроется автоматически, как только оплата будет подтверждена.";
     $("[data-done-text]", buy).textContent = text;
     var msg = "Здравствуйте! Хочу оплатить заказ № " + o.order_no + " — «" + o.title + "» на сайте, " + money(o.total) + ".";
     var act = $("[data-done-actions]", buy);
@@ -335,7 +335,7 @@
           '<div class="ply-total"><div class="crs-progress"><i style="width:' + (p.percent || 0) + '%"></i></div>' + (p.percent || 0) + "%</div>" +
           '<p class="cab-muted cab-small">Пройдено ' + (p.completed || 0) + " из " + plural(p.total || 0, "урока", "уроков", "уроков") + "</p>" +
           '<a class="btn btn--primary btn--lg" href="' + learn + '">' + (p.completed ? "Продолжить обучение" : "Начать обучение") + "</a>" +
-          '<button class="acc-link" type="button" data-buy-gift>Купить этот курс в подарок</button>';
+          "";
       } else if (!c.on_sale) {
         side.innerHTML = '<p class="buy-note buy-note--warn">Курс сейчас не продаётся.</p>';
       } else {
@@ -346,7 +346,7 @@
           "<li>" + ICO.check + "<span>Смотреть с телефона или компьютера, прогресс сохраняется</span></li>" + bundles + "</ul>" +
           '<button class="btn btn--accent btn--lg" type="button" data-buy-course>Купить курс</button>' +
           (free ? '<a class="btn btn--outline" href="' + learn + '">Смотреть бесплатный урок</a>' : "") +
-          '<button class="acc-link" type="button" data-buy-gift>Купить в подарок</button>' +
+          
           '<div class="crs-buy__links"><a href="/kursy/usloviya/">Условия покупки и возврата</a></div>';
       }
       var bar = $("[data-mbar]");

@@ -2,7 +2,7 @@ create extension if not exists pgcrypto;
 
 create table if not exists profiles (
   id text primary key,
-  email text not null unique,
+  email text not null,
   name text not null default '',
   phone text not null default '',
   role text not null default 'student' check (role in ('student', 'admin')),
@@ -69,6 +69,7 @@ create table if not exists course_orders (
   course_id uuid not null references courses(id),
   total numeric(12,2) not null,
   status text not null default 'pending' check (status in ('pending', 'paid', 'cancelled', 'refunded')),
+  check (total >= 0),
   idempotency_key text not null,
   payment_method text,
   note text,
@@ -109,10 +110,13 @@ create table if not exists playback_sessions (
   end_reason text
 );
 
+create index if not exists profiles_email_idx on profiles(lower(email));
 create index if not exists lessons_course_sort_idx on lessons(course_id, sort);
 create index if not exists orders_user_created_idx on course_orders(user_id, created_at desc);
 create index if not exists access_user_active_idx on course_access(user_id, course_id) where revoked_at is null;
 create index if not exists sessions_user_active_idx on playback_sessions(user_id) where ended_at is null;
+-- на один курс у пользователя не больше одного неоплаченного заказа
+create unique index if not exists orders_one_pending_idx on course_orders(user_id, course_id) where status = 'pending';
 
 insert into course_categories (id, slug, title, description, sort) values
   ('6a1f0c0e-1b2a-4c3d-8e4f-000000000005', 'sustavy-i-spina', 'Суставы и спина',
@@ -125,8 +129,8 @@ insert into courses (id, slug, category_id, title, short, direction, for_whom, t
    'Здоровые суставы и спина',
    'Видеокурс упражнений из 6 модулей: плечи, локти, тазобедренные суставы, колени, стопы и спина.',
    'Суставы и спина',
-   '- тем, кто чувствует скованность после нагрузки или долгого сидения;\n- тем, у кого сидячая работа;\n- тем, кто после консультации врача хочет заниматься дома.',
-   '- поддерживать подвижность суставов;\n- укреплять мышцы;\n- снижать мышечное напряжение.',
+   E'- тем, кто чувствует скованность после нагрузки или долгого сидения;\n- тем, у кого сидячая работа;\n- тем, кто после консультации врача хочет заниматься дома.',
+   E'- поддерживать подвижность суставов;\n- укреплять мышцы;\n- снижать мышечное напряжение.',
    '6 модулей, 10 видеоуроков: плечи, локти, тазобедренные суставы, колени, стопы и спина.',
    'Результат индивидуален и зависит от регулярности занятий и соблюдения техники.',
    'Занимайтесь без резкой боли. Двигайтесь плавно и прекратите упражнение при ухудшении самочувствия.',

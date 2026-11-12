@@ -359,7 +359,7 @@
         if (kind === "newpass") toast("Пароль обновлён. Вы вошли в кабинет");
         else if (kind === "register" || kind === "verify") {
           var r = res && res.onboarding && res.onboarding.referral;
-          if (!referralToast(r, true)) toast("Аккаунт создан. Добро пожаловать! 🎁");
+          if (!referralToast(r, true)) toast("Аккаунт создан. Добро пожаловать!");
         }
         done();
       }).catch(function (err) {

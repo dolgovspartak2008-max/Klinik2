@@ -42,7 +42,6 @@
         (o.status === "pending" ? '<span class="cab-muted cab-small">Администратор свяжется с вами для оплаты. Доступ откроется автоматически после подтверждения.</span>' : "") +
         "</div>";
     }).join("");
-    $("[data-course-news]").checked = !!d.course_news;
   }
 
   function load() {
@@ -70,23 +69,4 @@
       .catch(function (err) { b.disabled = false; if (window.FZToast) window.FZToast(err.message); });
   });
 
-  $("[data-gift-form]").addEventListener("submit", function (e) {
-    e.preventDefault();
-    var f = e.target, st = $("[data-gift-status]"), btn = f.querySelector("button");
-    var code = f.elements.code.value.trim().toUpperCase();
-    if (!code) { st.textContent = "Введите код."; st.className = "acc-status is-error"; return; }
-    btn.disabled = true;
-    SB.rpc("gift_activate", { p_code: code }).then(function (r) {
-      st.textContent = "Готово! «" + r.title + "» добавлен в ваши курсы."; st.className = "acc-status is-ok";
-      f.reset(); load();
-    }).catch(function (err) { st.textContent = err.message; st.className = "acc-status is-error"; })
-      .then(function () { btn.disabled = false; });
-  });
-
-  $("[data-course-news]").addEventListener("change", function (e) {
-    var on = e.target.checked;
-    SB.rpc("set_course_news", { p_on: on }).then(function () {
-      if (window.FZToast) window.FZToast(on ? "Будем сообщать о новых уроках" : "Уведомления о новых уроках выключены");
-    }).catch(function (err) { e.target.checked = !on; if (window.FZToast) window.FZToast(err.message); });
-  });
 })();

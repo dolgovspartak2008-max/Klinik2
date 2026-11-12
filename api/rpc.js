@@ -155,6 +155,9 @@ async function createOrder(sql, args, user) {
   if (!course) throw httpError("course_unavailable");
   const total = Number(course.price);
   const status = total === 0 ? "paid" : "pending";
+  // уже есть неоплаченный заказ на этот курс — возвращаем его, а не создаём второй
+  const pending = await sql.query(`select * from course_orders where user_id=$1 and course_id=$2 and status='pending' limit 1`, [user.id, courseId]);
+  if (pending[0]) return { order: { ...pending[0], total: Number(pending[0].total), title: course.title, course_slug: course.slug, is_gift: false } };
   const rows = await sql.query(
     `insert into course_orders (user_id, course_id, total, status, idempotency_key, paid_at)
      values ($1, $2, $3, $4, $5, case when $4 = 'paid' then now() else null end)
@@ -210,7 +213,7 @@ async function player(sql, args, user) {
     blocked: profile.status !== "active",
     watermark: profile.email,
     progress: await courseProgress(sql, user.id, course.id),
-    lessons: lessons.map((lesson) => ({ ...lesson, can_watch: (access || lesson.is_free) && profile.status === "active" })),
+    lessons: lessons.map(({ video_path, video_size, ...lesson }) => ({ ...lesson, can_watch: (access || lesson.is_free) && profile.status === "active" })),
   };
 }
 
@@ -305,7 +308,9 @@ async function adminOrders(sql, args) {
   const status = String(args.p_status || "");
   const values = status ? [status] : [];
   const rows = await sql.query(
-    `select o.*, c.title, p.email, p.name, p.phone from course_orders o join courses c on c.id=o.course_id
+    `select o.*, c.title, p.email, p.name, p.phone,
+       exists(select 1 from course_access a where a.user_id=o.user_id and a.course_id=o.course_id and a.revoked_at is null) as has_access
+     from course_orders o join courses c on c.id=o.course_id
      join profiles p on p.id=o.user_id ${status ? "where o.status=$1" : ""} order by o.created_at desc limit 100`,
     values,
   );
@@ -314,14 +319,48 @@ async function adminOrders(sql, args) {
 
 async function adminMarkPaid(sql, args) {
   const id = uuid(args.p_order);
-  const rows = await sql.query(`update course_orders set status='paid', payment_method=$2, note=$3, paid_at=coalesce(paid_at,now()) where id=$1 and status in ('pending','paid') returning *`, [id, String(args.p_method || ""), args.p_note || null]);
-  if (!rows[0]) throw httpError("not_found", 404);
-  await sql.query(`insert into course_access (user_id,course_id,source) values ($1,$2,'purchase') on conflict (user_id,course_id) do update set revoked_at=null,granted_at=now()`, [rows[0].user_id, rows[0].course_id]);
-  return { ok: true, already: rows[0].status === "paid" && !!rows[0].paid_at };
+  const method = String(args.p_method || "").trim().slice(0, 120);
+  if (!method) throw httpError("method_required");
+  // переводим в «оплачен» только ожидающий заказ — повторное нажатие ничего не меняет
+  const rows = await sql.query(
+    `update course_orders set status='paid', payment_method=$2, note=$3, paid_at=now()
+     where id=$1 and status='pending' returning *`,
+    [id, method, args.p_note || null],
+  );
+  if (!rows[0]) {
+    const existing = await sql.query(`select status from course_orders where id=$1`, [id]);
+    if (!existing[0]) throw httpError("not_found", 404);
+    if (existing[0].status === "paid") return { ok: true, already: true };
+    throw httpError("order_not_payable");
+  }
+  await sql.query(
+    `insert into course_access (user_id, course_id, source) values ($1, $2, 'purchase')
+     on conflict (user_id, course_id) do update set revoked_at = null,
+       granted_at = case when course_access.revoked_at is null then course_access.granted_at else now() end`,
+    [rows[0].user_id, rows[0].course_id],
+  );
+  return { ok: true, already: false };
 }
 
-async function dispatch(fn, args, user) {
-  const sql = db();
+async function heartbeat(sql, args, user) {
+  const id = uuid(args.p_session);
+  const rows = await sql.query(
+    `select s.*, l.course_id, l.is_free from playback_sessions s join lessons l on l.id = s.lesson_id where s.id = $1 and s.user_id = $2`,
+    [id, user.id],
+  );
+  const session = rows[0];
+  if (!session) return { ok: false, reason: "expired" };
+  if (session.ended_at) return { ok: false, reason: session.end_reason === "replaced" ? "replaced" : session.end_reason === "revoked" ? "revoked" : "expired" };
+  // доступ отозвали во время просмотра — останавливаем
+  if (!session.is_free && !(await hasAccess(sql, user.id, session.course_id))) {
+    await sql.query(`update playback_sessions set ended_at=now(), end_reason='revoked' where id=$1`, [id]);
+    return { ok: false, reason: "revoked" };
+  }
+  await sql.query(`update playback_sessions set last_seen_at=now() where id=$1`, [id]);
+  return { ok: true };
+}
+
+export async function dispatch(fn, args, user, sql = db()) {
   if (user) await ensureProfile(user);
   if (fn === "courses_catalog") return catalog(sql, user);
   if (fn === "course_detail") return detail(sql, args, user);
@@ -354,10 +393,7 @@ async function dispatch(fn, args, user) {
   }
   if (fn === "course_player") return player(sql, args, user);
   if (fn === "course_progress_save") return saveProgress(sql, args, user);
-  if (fn === "course_heartbeat") {
-    const rows = await sql.query(`update playback_sessions set last_seen_at=now() where id=$1 and user_id=$2 and ended_at is null returning id`, [uuid(args.p_session), user.id]);
-    return rows.length ? { ok: true } : { ok: false, reason: "expired" };
-  }
+  if (fn === "course_heartbeat") return heartbeat(sql, args, user);
   if (fn === "course_session_stop") {
     await sql.query(`update playback_sessions set ended_at=now(),end_reason='stopped' where id=$1 and user_id=$2 and ended_at is null`, [uuid(args.p_session), user.id]);
     return { ok: true };
@@ -397,6 +433,8 @@ async function dispatch(fn, args, user) {
     if (status === "published") {
       const ready = await sql.query(`select 1 from lessons where course_id=$1 and not hidden and video_path is not null limit 1`, [id]);
       if (!ready.length) throw httpError("no_lessons");
+      const priced = await sql.query(`select 1 from courses where id=$1 and price is not null`, [id]);
+      if (!priced.length) throw httpError("price_required");
     }
     await sql.query(`update courses set status=$1,updated_at=now() where id=$2`, [status, id]);
     return { ok: true };
@@ -410,9 +448,19 @@ async function dispatch(fn, args, user) {
     await sql.query(`update course_orders set status='cancelled',note=$2 where id=$1 and status='pending'`, [uuid(args.p_order), String(args.p_reason || "")]);
     return { ok: true };
   }
+  if (fn === "admin_access_revoke_order") {
+    const rows = await sql.query(`select user_id, course_id from course_orders where id=$1`, [uuid(args.p_order)]);
+    if (!rows[0]) throw httpError("not_found", 404);
+    await sql.query(`update course_access set revoked_at=now() where user_id=$1 and course_id=$2 and revoked_at is null`, [rows[0].user_id, rows[0].course_id]);
+    await sql.query(`update playback_sessions set ended_at=now(), end_reason='revoked' where user_id=$1 and ended_at is null`, [rows[0].user_id]);
+    return { ok: true };
+  }
   if (fn === "admin_order_refund") {
     const rows = await sql.query(`update course_orders set status='refunded',note=$2 where id=$1 and status='paid' returning *`, [uuid(args.p_order), String(args.p_reason || "")]);
-    if (rows[0] && args.p_revoke) await sql.query(`update course_access set revoked_at=now() where user_id=$1 and course_id=$2 and revoked_at is null`, [rows[0].user_id, rows[0].course_id]);
+    if (rows[0] && args.p_revoke) {
+      await sql.query(`update course_access set revoked_at=now() where user_id=$1 and course_id=$2 and revoked_at is null`, [rows[0].user_id, rows[0].course_id]);
+      await sql.query(`update playback_sessions set ended_at=now(), end_reason='revoked' where user_id=$1 and ended_at is null`, [rows[0].user_id]);
+    }
     return { ok: true };
   }
   throw httpError("bad_request");

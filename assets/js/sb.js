@@ -7,8 +7,7 @@
   var CFG = window.SITE_ACCOUNT || {};
   var BASE = "/api";
   var KEY = "";
-  var AUTH = window.NeonAuth;
-  var STORE = "fz.neon.session";
+  var STORE = "fz.auth";
   var listeners = [];
   var refreshing = null;
 
@@ -110,7 +109,7 @@
     promo_taken: "Такой промокод уже есть.",
     method_required: "Укажите способ оплаты (например, перевод на карту).",
     reason_required: "Укажите причину.",
-    video_too_big: "Файл больше 4,995 ГиБ — разделите его на несколько уроков или загрузите по частям.",
+    video_too_big: "Файл больше 5 ГБ — сожмите видео (например, до 1080p) или разделите его на два урока.",
     r2_not_configured: "Хранилище видео ещё не подключено. Обратитесь к администратору.",
     video_format: "Нужен файл MP4 (H.264).",
     image_too_big: "Картинка больше 5 МБ.",
@@ -119,29 +118,86 @@
     upload_unavailable: "Хранилище недоступно. Попробуйте через минуту.",
     network: "Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.",
     server_error: "Что-то пошло не так на сервере. Попробуйте ещё раз через минуту.",
-    not_configured: "Личный кабинет скоро заработает."
+    not_configured: "Личный кабинет скоро заработает.",
+    auth_origin: "Вход временно недоступен: адрес сайта не разрешён в настройках авторизации.",
+    email_not_verified: "Подтвердите email: откройте ссылку из письма и войдите снова."
   };
 
   function message(code) { return ERRORS[code] || ERRORS.server_error; }
 
   function SbError(code, status) { this.code = code; this.status = status; this.message = message(code); }
 
+  // ------------------------------------------------------------ авторизация (Neon Auth)
+  // Запросы идут на свой домен (/neon-auth/* → Neon Auth, правило в vercel.json):
+  // cookie сессии — first-party, вход работает и в Safari с блокировкой сторонних cookie.
+  // Для API сайта берём короткоживущий JWT (GET /neon-auth/token) и держим его только в памяти.
+  var AUTH_BASE = "/neon-auth";
+  var jwt = null, jwtExp = 0;
+
   function load() {
-    try { var s = JSON.parse(localStorage.getItem(STORE) || "null"); return s && s.access_token ? s : null; }
-    catch (e) { return null; }
+    try { return localStorage.getItem(STORE) === "1"; } catch (e) { return !!memory; }
   }
-  function save(s) {
+  function mark(on) {
+    try { if (on) localStorage.setItem(STORE, "1"); else localStorage.removeItem(STORE); } catch (e) {}
+    memory = on;
+    if (!on) { jwt = null; jwtExp = 0; }
+    listeners.forEach(function (fn) { try { fn(!!on); } catch (e) {} });
+  }
+  var memory = false;
+  memory = load();
+
+  function decodeExp(t) {
     try {
-      if (s) localStorage.setItem(STORE, JSON.stringify({
-        access_token: s.access_token, refresh_token: s.refresh_token,
-        expires_at: s.expires_at || Math.floor(Date.now() / 1000) + (s.expires_in || 3600)
-      }));
-      else localStorage.removeItem(STORE);
-    } catch (e) { /* приватный режим — сессия живёт до закрытия вкладки */ }
-    memory = s ? load() || s : null;
-    listeners.forEach(function (fn) { try { fn(!!memory); } catch (e) {} });
+      var p = JSON.parse(atob(t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+      return Number(p.exp) || 0;
+    } catch (e) { return 0; }
   }
-  var memory = load();
+
+  function authCall(path, opts) {
+    opts = opts || {};
+    return fetch(AUTH_BASE + path, {
+      method: opts.method || "GET", credentials: "same-origin",
+      headers: opts.body ? { "Content-Type": "application/json" } : {},
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    }).catch(function () { throw new SbError("network", 0); }).then(function (r) {
+      return r.text().then(function (t) {
+        var j = null; try { j = t ? JSON.parse(t) : null; } catch (e) {}
+        if (!r.ok) {
+          var code = String((j && j.code) || "").toUpperCase();
+          var map = {
+            INVALID_EMAIL_OR_PASSWORD: "invalid_credentials", USER_ALREADY_EXISTS: "email_taken",
+            USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "email_taken", INVALID_EMAIL: "bad_email",
+            PASSWORD_TOO_SHORT: "weak_password", PASSWORD_TOO_LONG: "weak_password", INVALID_TOKEN: "code_expired",
+            EMAIL_NOT_VERIFIED: "email_not_verified", INVALID_ORIGIN: "auth_origin", TOO_MANY_REQUESTS: "rate_limited"
+          };
+          var err = new SbError(map[code] || (r.status === 429 ? "rate_limited" : r.status === 401 ? "not_authenticated" : "server_error"), r.status);
+          err.data = j;
+          throw err;
+        }
+        return j;
+      });
+    });
+  }
+
+  function refresh() {
+    if (refreshing) return refreshing;
+    refreshing = authCall("/token").then(function (r) {
+      if (!r || !r.token) throw new SbError("not_authenticated", 401);
+      jwt = r.token; jwtExp = decodeExp(jwt);
+      if (!memory) mark(true);
+      return jwt;
+    }).catch(function (e) {
+      if (e.code !== "network") mark(false);
+      return null;
+    }).finally(function () { refreshing = null; });
+    return refreshing;
+  }
+
+  function token() {
+    if (!memory) return Promise.resolve(null);
+    if (jwt && jwtExp - 60 > Date.now() / 1000) return Promise.resolve(jwt);
+    return refresh();
+  }
 
   function headers(token) {
     var h = { "Content-Type": "application/json" };
@@ -167,29 +223,24 @@
       });
   }
 
-  function refresh() {
-    if (!AUTH) { save(null); return Promise.resolve(null); }
-    if (refreshing) return refreshing;
-    refreshing = AUTH.getSession().then(function (result) {
-      var ns = result && result.data && (result.data.session || result.data);
-      if (!ns || !ns.access_token) { save(null); return null; }
-      save(ns); return load();
-    }).catch(function () { save(null); return null; })
-      .finally(function () { refreshing = null; });
-    return refreshing;
-  }
-
-  function token() {
-    var s = load();
-    if (s && (!s.expires_at || s.expires_at - 60 > Date.now() / 1000)) return Promise.resolve(s.access_token);
-    return refresh().then(function (ns) { return ns && ns.access_token; });
+  // запрос к API сайта; при 401 один раз обновляем JWT и повторяем
+  function apiCall(path, payload, required) {
+    return token().then(function (t) {
+      if (!t && required) throw new SbError("not_authenticated", 401);
+      return call(path, { method: "POST", headers: headers(t), body: JSON.stringify(payload) }).catch(function (e) {
+        if (e.status !== 401 || !t) throw e;
+        jwt = null;
+        return refresh().then(function (t2) {
+          if (!t2) { if (required) throw e; return call(path, { method: "POST", headers: headers(null), body: JSON.stringify(payload) }); }
+          return call(path, { method: "POST", headers: headers(t2), body: JSON.stringify(payload) });
+        });
+      });
+    });
   }
 
   function rpc(fn, args) {
-    return token().then(function (t) {
-      if (!t && ["courses_catalog", "course_detail"].indexOf(fn) < 0) throw new SbError("not_authenticated", 401);
-      return call("/rpc", { method: "POST", headers: headers(t), body: JSON.stringify({ fn: fn, args: args || {} }) });
-    }).then(function (res) {
+    var pub = ["courses_catalog", "course_detail"].indexOf(fn) >= 0;
+    return apiCall("/rpc", { fn: fn, args: args || {} }, !pub).then(function (res) {
       if (res && res.ok === false && res.error) throw new SbError(res.error, 400);
       return res;
     });
@@ -197,47 +248,54 @@
 
   function account(action, body) {
     body = body || {};
-    if (!AUTH) return Promise.reject(new SbError("not_configured", 503));
-    var request;
-    if (action === "login") request = AUTH.signInWithPassword({ email: body.email, password: body.password });
-    else if (action === "signup") request = AUTH.signUp({ email: body.email, password: body.password, options: { data: { name: body.name, phone: body.phone || "" } } });
-    else if (action === "reset") return AUTH.resetPasswordForEmail(body.email, { redirectTo: location.origin + "/kabinet/" }).then(function () { return { mail: true, status: "email_sent" }; });
-    else if (/^tg_/.test(action)) return Promise.reject(new SbError("telegram_not_configured", 400));
-    else return Promise.reject(new SbError("bad_request", 400));
-    return request.then(function (result) {
-      if (result && result.error) throw new SbError(action === "login" ? "invalid_credentials" : "email_taken", 400);
-      var session = result && result.data && (result.data.session || result.data);
-      if (session && session.access_token) { save(session); return { session: session, onboarding: null }; }
-      return { status: "email_sent", email: body.email };
-    });
+    var here = location.origin + "/kabinet/";
+    if (action === "login") {
+      return authCall("/sign-in/email", { method: "POST", body: { email: body.email, password: body.password, rememberMe: true } })
+        .then(function () { mark(true); return refresh(); })
+        .then(function (t) { if (!t) throw new SbError("not_authenticated", 401); return { session: true }; });
+    }
+    if (action === "signup") {
+      return authCall("/sign-up/email", { method: "POST", body: { email: body.email, password: body.password, name: body.name, callbackURL: here } })
+        .then(function () { mark(true); return refresh(); })
+        .then(function (t) {
+          if (t && body.phone) rpc("update_my_profile", { p_name: body.name, p_phone: body.phone }).catch(function () {});
+          if (t) return { session: true, onboarding: null };
+          return { status: "email_sent", email: body.email };
+        });
+    }
+    if (action === "reset") {
+      return authCall("/request-password-reset", { method: "POST", body: { email: body.email, redirectTo: here } })
+        .then(function () { return { mail: true, status: "email_sent" }; });
+    }
+    if (action === "verify_email") {
+      return authCall("/send-verification-email", { method: "POST", body: { email: body.email, callbackURL: location.origin + "/admin/" } })
+        .then(function () { return { ok: true }; });
+    }
+    return Promise.reject(new SbError("bad_request", 400));
   }
 
   // Серверная функция онлайн-курсов (выдача видео, загрузка в админке)
   function courses(action, body) {
-    return token().then(function (t) {
-      if (!t) throw new SbError("not_authenticated", 401);
-      return call("/courses", { method: "POST", headers: headers(t),
-        body: JSON.stringify(Object.assign({ action: action }, body || {})) });
-    });
+    return apiCall("/courses", Object.assign({ action: action }, body || {}), true);
   }
 
-  function verifyRecovery(tokenHash) {
-    return Promise.reject(new SbError("bad_request", 400));
+  // новый пароль по ссылке из письма (?token=…)
+  function resetPassword(resetToken, pw) {
+    return authCall("/reset-password", { method: "POST", body: { newPassword: pw, token: resetToken } });
   }
 
   function updatePassword(pw) {
-    if (!AUTH) return Promise.reject(new SbError("not_configured", 503));
-    return AUTH.updateUser({ password: pw });
+    return Promise.reject(new SbError("bad_request", 400));
   }
 
   function signOut() {
-    save(null);
-    if (AUTH) AUTH.signOut().catch(function () {});
+    authCall("/sign-out", { method: "POST", body: {} }).catch(function () {});
+    mark(false);
   }
 
   window.SB = {
-    enabled: !!AUTH,
-    isSignedIn: function () { return !!load(); },
+    enabled: true,
+    isSignedIn: function () { return !!memory; },
     onChange: function (fn) { listeners.push(fn); },
     rpc: rpc,
     account: account,
@@ -245,7 +303,8 @@
     token: token,
     base: BASE,
     key: KEY,
-    verifyRecovery: verifyRecovery,
+    resetPassword: resetPassword,
+    refresh: refresh,
     updatePassword: updatePassword,
     signOut: signOut,
     message: message,

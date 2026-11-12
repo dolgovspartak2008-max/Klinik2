@@ -66,8 +66,8 @@
         <form class="buy-form acc-form" data-buy-form novalidate>
           <dl class="buy-lines" data-buy-lines></dl>
           <p class="buy-note buy-note--warn" data-buy-note hidden></p>
-          <label class="check"><input type="checkbox" name="gift" /><span>Купить в подарок — получу код, который можно передать другому человеку</span></label>
-          <div class="buy-promo">
+          <label class="check" hidden><input type="checkbox" name="gift" /><span>Купить в подарок — получу код, который можно передать другому человеку</span></label>
+          <div class="buy-promo" hidden>
             <label class="field"><span>Промокод</span><input name="promo" type="text" maxlength="30" autocomplete="off" autocapitalize="characters" /></label>
             <button class="btn btn--outline" type="button" data-buy-apply>Применить</button>
           </div>
@@ -89,7 +89,6 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="/assets/js/config.js"></script>
-  <script src="/assets/js/neon-auth.js"></script>
   <script src="/assets/js/sb.js"></script>
   <script src="/assets/js/account.js"></script>
   <script src="/assets/js/courses.js"></script>

@@ -83,17 +83,6 @@
       ? "Телефон закреплён за аккаунтом. Если номер сменился — позвоните нам."
       : "По телефону мы свяжемся с вами по заказу курса.";
     $("[data-email]").textContent = p.email || "не указан";
-    $("[data-telegram]").textContent = p.telegram ? (p.telegram.username ? "@" + p.telegram.username : p.telegram.first_name || "привязан") : "не привязан";
-    $("[data-link-tg]").hidden = !!p.telegram;
-    $("[data-email-block]").hidden = !!p.email;
-
-    // новости в Telegram — только по согласию и только при привязанном Telegram
-    var news = $("[data-news]");
-    news.checked = !!p.news_opt_in && !!p.telegram;
-    news.disabled = !p.telegram;
-    $("[data-news-hint]").textContent = p.telegram
-      ? "Изредка присылаем новости и акции. Отписаться можно в любой момент — здесь или командой /stop в боте."
-      : "Чтобы получать новости, сначала привяжите Telegram.";
 
     state("dashboard");
   }
@@ -136,68 +125,32 @@
       SB.rpc("update_my_profile", { p_name: pn, p_phone: form.elements.phone.value })
         .then(function () { busy(form, false); formStatus(form, "Сохранено", true); return load(); })
         .catch(function (err) { busy(form, false); formStatus(form, err.message, false); });
-    } else if (form.hasAttribute("data-email-form")) {
-      e.preventDefault();
-      busy(form, true);
-      SB.account("set_email", { email: form.elements.email.value.trim(), password: form.elements.password.value })
-        .then(function (r) {
-          busy(form, false);
-          if (r && r.status === "verify") {
-            // email привяжется после ввода кода из письма
-            var cf = $("[data-email-code-form]");
-            form.hidden = true; cf.hidden = false; cf.reset();
-            $("[data-email-code-lead]").textContent = "Мы отправили 6-значный код на " + r.email + ". Введите его — и можно будет входить по email и паролю.";
-            cf.elements.code.focus();
-            return;
-          }
-          toast("Готово: теперь можно входить и по email"); return load();
-        })
-        .catch(function (err) { busy(form, false); formStatus(form, err.message, false); });
-    } else if (form.hasAttribute("data-email-code-form")) {
-      e.preventDefault();
-      var ec = form.elements.code.value.replace(/\s+/g, "");
-      if (!/^[0-9]{6}$/.test(ec)) { formStatus(form, SB.message("bad_code"), false); return; }
-      busy(form, true);
-      SB.account("set_email_confirm", { code: ec })
-        .then(function () { toast("Готово: теперь можно входить и по email"); return load(); })
-        .catch(function (err) { busy(form, false); formStatus(form, err.message, false); });
     } else if (form.hasAttribute("data-reset-form")) {
       e.preventDefault();
       var p1 = form.elements.password.value, p2 = form.elements.password2.value;
       if (p1.length < 8 || !/[0-9]/.test(p1) || !/[A-Za-zА-Яа-яЁё]/.test(p1)) { formStatus(form, SB.message("weak_password"), false); return; }
       if (p1 !== p2) { formStatus(form, "Пароли не совпадают.", false); return; }
       busy(form, true);
-      SB.updatePassword(p1)
-        .then(function () { toast("Пароль обновлён"); history.replaceState(null, "", "/kabinet/"); state("loading"); return load(); })
+      SB.resetPassword(new URLSearchParams(location.search).get("token"), p1)
+        .then(function () {
+          busy(form, false);
+          history.replaceState(null, "", "/kabinet/");
+          toast("Пароль обновлён — войдите с новым паролем");
+          SB.signOut(); state("guest");
+          if (window.FZAuth) window.FZAuth.open("login");
+        })
         .catch(function (err) { busy(form, false); formStatus(form, err.message, false); });
     }
   });
 
-  doc.addEventListener("change", function (e) {
-    var t = e.target;
-    if (!t.matches("[data-news]")) return;
-    var on = t.checked;
-    t.disabled = true;
-    SB.rpc("set_news_opt_in", { p_on: on })
-      .then(function () {
-        t.disabled = false; data.profile.news_opt_in = on;
-        toast(on ? "Готово: будем присылать новости в Telegram" : "Вы отписались от новостей");
-      })
-      .catch(function (err) { t.disabled = false; t.checked = !on; toast(err.message); });
-  });
-
   doc.addEventListener("click", function (e) {
-    var back = e.target.closest("[data-email-back]");
-    if (back) { $("[data-email-code-form]").hidden = true; $("[data-email-form]").hidden = false; return; }
-    var t = e.target.closest("[data-signout],[data-delete],[data-link-tg],[data-open-auth],[data-reload]");
+    var t = e.target.closest("[data-signout],[data-delete],[data-open-auth],[data-reload]");
     if (!t) return;
     if (t.hasAttribute("data-signout")) {
       SB.signOut(); location.href = "/";
     } else if (t.hasAttribute("data-delete")) {
       if (!confirm("Удалить аккаунт? Доступ к купленным курсам будет потерян.")) return;
       SB.rpc("delete_my_account").then(function () { SB.signOut(); location.href = "/"; }).catch(function (err) { toast(err.message); });
-    } else if (t.hasAttribute("data-link-tg")) {
-      if (window.FZAuth) window.FZAuth.linkTelegram();
     } else if (t.hasAttribute("data-open-auth")) {
       if (window.FZAuth) window.FZAuth.open(t.getAttribute("data-open-auth"));
     } else if (t.hasAttribute("data-reload")) {
@@ -205,7 +158,6 @@
     }
   });
 
-  window.FZOnLinked = function () { load(); };
 
   // ------------------------------------------------------------ старт
   if (!SB || !SB.enabled) {
@@ -214,15 +166,14 @@
     return;
   }
   var params = new URLSearchParams(location.search);
-  var resetHash = params.get("reset");
-  if (resetHash && /^[A-Za-z0-9_-]{20,200}$/.test(resetHash)) {
-    SB.verifyRecovery(resetHash).then(function () { state("reset"); })
-      .catch(function () {
-        $("[data-error-text]").textContent = "Ссылка для смены пароля устарела или уже использована. Запросите новую в окне входа.";
-        state("error");
-      });
+  // ссылка из письма «новый пароль»: /kabinet/?token=…  (ошибка: ?error=INVALID_TOKEN)
+  var resetToken = params.get("token");
+  if (params.get("error") === "INVALID_TOKEN" || (resetToken && !/^[A-Za-z0-9_-]{10,200}$/.test(resetToken))) {
+    $("[data-error-text]").textContent = "Ссылка для смены пароля устарела или уже использована. Запросите новую в окне входа.";
+    state("error");
     return;
   }
+  if (resetToken) { state("reset"); return; }
   if (!SB.isSignedIn()) { state("guest"); return; }
   load();
   SB.onChange(function (signed) { if (!signed) state("guest"); });

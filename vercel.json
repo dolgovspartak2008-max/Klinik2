@@ -12,7 +12,7 @@
       ]
     },
     {
-      "source": "/assets/js/(config|neon-auth|sb).js",
+      "source": "/assets/js/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -67,9 +67,26 @@
           "value": "no-store"
         }
       ]
+    },
+    {
+      "source": "/neon-auth/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
     }
   ],
   "rewrites": [
+    {
+      "source": "/neon-auth/:path*",
+      "destination": "https://ep-spring-paper-b960l5u6.neonauth.c-7.eu-central-1.aws.neon.tech/neondb/auth/:path*"
+    },
     {
       "source": "/kursy/:slug([a-z0-9-]+)/uroki",
       "destination": "/kursy/urok.html"

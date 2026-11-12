@@ -185,8 +185,6 @@
           (st !== "published" ? '<button class="btn btn--accent btn--sm" type="button" data-c-status="published" data-id="' + esc(c.id) + '">Опубликовать</button>' : "") +
           (st === "published" ? '<button class="btn btn--outline btn--sm" type="button" data-c-status="archived" data-id="' + esc(c.id) + '">Снять с продажи</button>' : "") +
           (st === "archived" ? '<button class="btn btn--outline btn--sm" type="button" data-c-status="draft" data-id="' + esc(c.id) + '">В черновики</button>' : "") +
-          '<label class="btn btn--outline btn--sm adm-file">Обложка…<input type="file" accept="image/jpeg,image/png,image/webp" data-cover="' + esc(c.id) + '" hidden /></label>' +
-          (c.cover_url ? '<img class="adm-thumb" src="' + esc(c.cover_url) + '" alt="" />' : "") +
         "</div>" +
         '<p class="cab-muted cab-small">Снятие с продажи не отнимает курс у тех, кто его уже купил.</p>' +
         "<h3>Уроки</h3>" + lessonsHtml(c) +
@@ -207,7 +205,6 @@
           (i < c.lessons.length - 1 ? '<button class="acc-link" type="button" data-l-move="1" aria-label="Ниже">↓</button>' : "") +
           '<button class="acc-link" type="button" data-l-edit>Изменить</button>' +
           '<label class="acc-link adm-file">' + (l.has_video ? "Заменить видео" : "Загрузить видео") + '<input type="file" accept="video/mp4" data-l-video hidden /></label>' +
-          '<label class="acc-link adm-file">Постер<input type="file" accept="image/jpeg,image/png,image/webp" data-l-poster hidden /></label>' +
           (l.has_video ? '<button class="acc-link" type="button" data-l-toggle="' + (l.hidden ? "show" : "hide") + '">' + (l.hidden ? "Опубликовать" : "Скрыть") + "</button>" : "") +
           (!l.published_at && !l.viewers ? '<button class="acc-link acc-link--danger" type="button" data-l-del>Удалить</button>' : "") +
         '</div></div><p class="cab-muted cab-small" data-l-status></p>' +
@@ -234,7 +231,7 @@
         list.map(function (o) {
           var refunded = Number(o.refunded) || 0;
           return "<tr><td><b>№ " + o.order_no + "</b><br><small class=\"cab-muted\">" + esc(dt(o.created_at)) + "</small></td>" +
-            '<td><button class="acc-link" type="button" data-user="' + esc(o.user.id) + '">' + esc(o.user.name || "без имени") + ' <span class="adm-no">№ ' + o.user.client_no + "</span></button>" +
+            '<td>' + esc(o.user.name || "без имени") + ' <span class="adm-no">' + esc(o.user.email || "") + "</span>" +
               "<br><small class=\"cab-muted\">" + esc(o.user.phone || o.user.email || "") + "</small></td>" +
             "<td>" + esc(o.title) + (o.is_gift ? " · 🎁 подарок" : "") + (o.gift ? '<br><small>код <code>' + esc(o.gift.code) + "</code> · " + (o.gift.status === "activated" ? "активирован" : o.gift.status === "cancelled" ? "аннулирован" : "не активирован") + "</small>" : "") +
               (o.note ? '<br><small class="cab-muted">' + esc(o.note) + "</small>" : "") + "</td>" +
@@ -246,7 +243,9 @@
             '<td><div class="adm-actions">' +
               (o.status === "pending" || o.status === "expired" ? '<button class="btn btn--accent btn--sm" type="button" data-o-paid="' + esc(o.id) + '" data-no="' + o.order_no + '" data-sum="' + esc(o.total) + '">Оплата получена</button>' +
                 '<button class="acc-link acc-link--danger" type="button" data-o-cancel="' + esc(o.id) + '">Отменить</button>' : "") +
-              ((o.status === "paid" || o.status === "refunded") && refunded < Number(o.total) ? '<button class="acc-link acc-link--danger" type="button" data-o-refund="' + esc(o.id) + '" data-left="' + (Number(o.total) - refunded) + '">Возврат</button>' : "") +
+              (o.status === "paid" ? '<button class="acc-link acc-link--danger" type="button" data-o-refund="' + esc(o.id) + '" data-left="' + Number(o.total) + '">Возврат</button>' : "") +
+              (o.has_access && o.status !== "pending" ? '<button class="acc-link acc-link--danger" type="button" data-o-revoke="' + esc(o.id) + '">Закрыть доступ</button>' : "") +
+              (o.status === "paid" && !o.has_access ? '<small class="cab-muted">доступ закрыт</small>' : "") +
             "</div></td></tr>";
         }).join("") + "</tbody></table></div>";
       labelTables(p);
@@ -431,7 +430,7 @@
       if (!method) return;
       t.disabled = true;
       SB.rpc("admin_order_mark_paid", { p_order: t.getAttribute("data-o-paid"), p_method: method, p_note: null })
-        .then(function (r) { toast(r.already ? "Заказ уже был оплачен" : r.gift_code ? "Оплачено. Подарочный код: " + r.gift_code : "Оплачено — доступ выдан, клиент получит уведомление"); loadOrders(); })
+        .then(function (r) { toast(r.already ? "Заказ уже был оплачен" : "Оплачено — доступ к курсу открыт"); loadOrders(); })
         .catch(function (err) { t.disabled = false; fail(err); });
     }
     else if ((t = e.target.closest("[data-o-cancel]"))) {
@@ -439,10 +438,15 @@
       if (why === null) return;
       SB.rpc("admin_order_cancel", { p_order: t.getAttribute("data-o-cancel"), p_reason: why }).then(function () { toast("Заказ отменён"); loadOrders(); }).catch(fail);
     }
+    else if ((t = e.target.closest("[data-o-revoke]"))) {
+      if (!confirm("Закрыть клиенту доступ к курсу? Просмотр остановится на всех устройствах. Открыть снова можно повторной оплатой заказа.")) return;
+      t.disabled = true;
+      SB.rpc("admin_access_revoke_order", { p_order: t.getAttribute("data-o-revoke") })
+        .then(function () { toast("Доступ закрыт"); loadOrders(); }).catch(function (err) { t.disabled = false; fail(err); });
+    }
     else if ((t = e.target.closest("[data-o-refund]"))) {
-      var left = Number(t.getAttribute("data-left"));
-      var sum = prompt("Сумма возврата, ₽ (не больше " + left + "). Деньги клиенту возвращаются тем же способом, что и оплата — это делаете вы; здесь возврат фиксируется.", String(left));
-      if (!sum) return;
+      var sum = Number(t.getAttribute("data-left"));
+      if (!confirm("Отметить возврат " + money(sum) + "? Деньги клиенту возвращаете вы тем же способом, что и оплата; здесь возврат только фиксируется.")) return;
       var reason = prompt("Причина возврата (обязательно):", "");
       if (!reason) return;
       var revoke = confirm("Закрыть клиенту доступ к курсу этого заказа?\nОК — закрыть, Отмена — оставить доступ.");

@@ -1,19 +1,6 @@
-import { build } from "esbuild";
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 
-await build({
-  entryPoints: ["src/neon-auth-entry.js"],
-  outfile: "assets/js/neon-auth.js",
-  bundle: true,
-  format: "iife",
-  minify: true,
-  platform: "browser",
-  define: {
-    "process.env.NEON_AUTH_BASE_URL": JSON.stringify(process.env.NEON_AUTH_BASE_URL || ""),
-    "process.env.VITE_NEON_AUTH_URL": JSON.stringify(process.env.VITE_NEON_AUTH_URL || ""),
-  },
-});
-
+// db/schema.sql -> api/_generated/schema.js (для защищённого /api/setup)
 const schema = await readFile("db/schema.sql", "utf8");
 const statements = schema
   .split(/;\s*(?:\r?\n|$)/)
@@ -22,6 +9,7 @@ const statements = schema
 await mkdir("api/_generated", { recursive: true });
 await writeFile("api/_generated/schema.js", `export const schemaStatements = ${JSON.stringify(statements, null, 2)};\n`);
 
+// статический сайт -> public
 await rm("public", { recursive: true, force: true });
 await mkdir("public", { recursive: true });
 for (const directory of ["admin", "assets", "kabinet", "kursy"]) {
