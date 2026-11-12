@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import upload from "../assets/js/storage-upload.js";
+import "../assets/js/storage-upload.js";
+
+const upload = globalThis.FZStorageUpload;
 
 class FakeXhr {
   static latest = null;

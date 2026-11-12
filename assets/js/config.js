@@ -19,13 +19,8 @@ window.SITE_LEGAL = {
 };
 
 /*
- * Supabase — база общая с сайтом Физиотеры (fiziotera.online).
- *   supabaseUrl — прокси на этом же домене (правило /sb/ в vercel.json).
- *   anonKey     — публичный (anon) ключ, не секретный: доступ ограничен проверками в базе.
- *   coursesOnly — кабинет только для курсов: скидки и промокоды друзей Физиотеры не показываются.
+ * Курсы используют Neon Auth, Neon Postgres и серверные функции Vercel.
  */
 window.SITE_ACCOUNT = {
-  supabaseUrl: "/sb",
-  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwdWpzd3FvdmhlbWJzaHZheGZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3MjIwNTksImV4cCI6MjEwNzI5ODA1OX0.7ptbrwm-pSPn8UunJ4_s8-4i8QVKZFOCUICM35MKXTI",
   coursesOnly: true
 };

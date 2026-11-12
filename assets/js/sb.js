@@ -1,15 +1,14 @@
 /*
- * Мини-клиент Supabase для сайта (без внешних библиотек).
- * Сессия хранится в localStorage и обновляется автоматически.
- * Запросы идут на свой домен (/sb/…), Vercel проксирует их в Supabase —
- * поэтому сайт работает, даже если прямой доступ к supabase.co ограничен.
+ * Клиент курсов. Авторизацию ведёт Neon Auth, данные и видео выдаются
+ * серверными функциями Vercel на своём домене.
  */
 (function () {
   "use strict";
   var CFG = window.SITE_ACCOUNT || {};
-  var BASE = String(CFG.supabaseUrl || "").replace(/\/+$/, "");
-  var KEY = CFG.anonKey || "";
-  var STORE = "fz.session";
+  var BASE = "/api";
+  var KEY = "";
+  var AUTH = window.NeonAuth;
+  var STORE = "fz.neon.session";
   var listeners = [];
   var refreshing = null;
 
@@ -145,8 +144,8 @@
   var memory = load();
 
   function headers(token) {
-    var h = { "Content-Type": "application/json", apikey: KEY };
-    h.Authorization = "Bearer " + (token || KEY);
+    var h = { "Content-Type": "application/json" };
+    if (token) h.Authorization = "Bearer " + token;
     return h;
   }
 
@@ -169,28 +168,27 @@
   }
 
   function refresh() {
-    var s = load();
-    if (!s || !s.refresh_token) { save(null); return Promise.resolve(null); }
+    if (!AUTH) { save(null); return Promise.resolve(null); }
     if (refreshing) return refreshing;
-    refreshing = call("/auth/v1/token?grant_type=refresh_token", {
-      method: "POST", headers: headers(), body: JSON.stringify({ refresh_token: s.refresh_token })
-    }).then(function (ns) { save(ns); return load(); })
-      .catch(function (e) { if (e.code !== "network") save(null); throw e; })
+    refreshing = AUTH.getSession().then(function (result) {
+      var ns = result && result.data && (result.data.session || result.data);
+      if (!ns || !ns.access_token) { save(null); return null; }
+      save(ns); return load();
+    }).catch(function () { save(null); return null; })
       .finally(function () { refreshing = null; });
     return refreshing;
   }
 
   function token() {
     var s = load();
-    if (!s) return Promise.resolve(null);
-    if (s.expires_at - 60 > Date.now() / 1000) return Promise.resolve(s.access_token);
+    if (s && (!s.expires_at || s.expires_at - 60 > Date.now() / 1000)) return Promise.resolve(s.access_token);
     return refresh().then(function (ns) { return ns && ns.access_token; });
   }
 
   function rpc(fn, args) {
     return token().then(function (t) {
-      if (!t && ["program_info", "courses_catalog", "course_detail"].indexOf(fn) < 0) throw new SbError("not_authenticated", 401);
-      return call("/rest/v1/rpc/" + fn, { method: "POST", headers: headers(t), body: JSON.stringify(args || {}) });
+      if (!t && ["courses_catalog", "course_detail"].indexOf(fn) < 0) throw new SbError("not_authenticated", 401);
+      return call("/rpc", { method: "POST", headers: headers(t), body: JSON.stringify({ fn: fn, args: args || {} }) });
     }).then(function (res) {
       if (res && res.ok === false && res.error) throw new SbError(res.error, 400);
       return res;
@@ -198,12 +196,19 @@
   }
 
   function account(action, body) {
-    return token().catch(function () { return null; }).then(function (t) {
-      var payload = Object.assign({ action: action }, body || {});
-      return call("/functions/v1/account", { method: "POST", headers: headers(t), body: JSON.stringify(payload) });
-    }).then(function (res) {
-      if (res && res.session) save(res.session);
-      return res;
+    body = body || {};
+    if (!AUTH) return Promise.reject(new SbError("not_configured", 503));
+    var request;
+    if (action === "login") request = AUTH.signInWithPassword({ email: body.email, password: body.password });
+    else if (action === "signup") request = AUTH.signUp({ email: body.email, password: body.password, options: { data: { name: body.name, phone: body.phone || "" } } });
+    else if (action === "reset") return AUTH.resetPasswordForEmail(body.email, { redirectTo: location.origin + "/kabinet/" }).then(function () { return { mail: true, status: "email_sent" }; });
+    else if (/^tg_/.test(action)) return Promise.reject(new SbError("telegram_not_configured", 400));
+    else return Promise.reject(new SbError("bad_request", 400));
+    return request.then(function (result) {
+      if (result && result.error) throw new SbError(action === "login" ? "invalid_credentials" : "email_taken", 400);
+      var session = result && result.data && (result.data.session || result.data);
+      if (session && session.access_token) { save(session); return { session: session, onboarding: null }; }
+      return { status: "email_sent", email: body.email };
     });
   }
 
@@ -211,31 +216,27 @@
   function courses(action, body) {
     return token().then(function (t) {
       if (!t) throw new SbError("not_authenticated", 401);
-      return call("/functions/v1/courses", { method: "POST", headers: headers(t),
+      return call("/courses", { method: "POST", headers: headers(t),
         body: JSON.stringify(Object.assign({ action: action }, body || {})) });
     });
   }
 
   function verifyRecovery(tokenHash) {
-    return call("/auth/v1/verify", {
-      method: "POST", headers: headers(), body: JSON.stringify({ type: "recovery", token_hash: tokenHash })
-    }).then(function (s) { save(s); return s; });
+    return Promise.reject(new SbError("bad_request", 400));
   }
 
   function updatePassword(pw) {
-    return token().then(function (t) {
-      return call("/auth/v1/user", { method: "PUT", headers: headers(t), body: JSON.stringify({ password: pw }) });
-    });
+    if (!AUTH) return Promise.reject(new SbError("not_configured", 503));
+    return AUTH.updateUser({ password: pw });
   }
 
   function signOut() {
-    var s = load();
     save(null);
-    if (s) fetch(BASE + "/auth/v1/logout?scope=local", { method: "POST", headers: headers(s.access_token) }).catch(function () {});
+    if (AUTH) AUTH.signOut().catch(function () {});
   }
 
   window.SB = {
-    enabled: !!(BASE && KEY),
+    enabled: !!AUTH,
     isSignedIn: function () { return !!load(); },
     onChange: function (fn) { listeners.push(fn); },
     rpc: rpc,

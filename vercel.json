@@ -11,6 +11,15 @@
       ]
     },
     {
+      "source": "/assets/js/(config|neon-auth|sb).js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
       "source": "/(robots.txt|sitemap.xml)",
       "headers": [
         {
@@ -57,26 +66,9 @@
           "value": "no-store"
         }
       ]
-    },
-    {
-      "source": "/sb/(.*)",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        }
-      ]
     }
   ],
   "rewrites": [
-    {
-      "source": "/sb/:path*",
-      "destination": "https://ppujswqovhembshvaxff.supabase.co/:path*"
-    },
     {
       "source": "/kursy/:slug([a-z0-9-]+)/uroki",
       "destination": "/kursy/urok.html"

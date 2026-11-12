@@ -162,14 +162,14 @@
     if (!session) return;
     SB.token().then(function (t) {
       if (!t) return;
-      var h = { "Content-Type": "application/json", apikey: SB.key, Authorization: "Bearer " + t };
+      var h = { "Content-Type": "application/json", Authorization: "Bearer " + t };
       var pos = video.currentTime || 0;
       if (lesson && lesson.can_watch && pos > 0) {
-        fetch(SB.base + "/rest/v1/rpc/course_progress_save", { method: "POST", keepalive: true, headers: h,
-          body: JSON.stringify({ p_lesson: lesson.id, p_position: pos, p_duration: null, p_completed: false }) }).catch(function () {});
+        fetch(SB.base + "/rpc", { method: "POST", keepalive: true, headers: h,
+          body: JSON.stringify({ fn: "course_progress_save", args: { p_lesson: lesson.id, p_position: pos, p_duration: null, p_completed: false } }) }).catch(function () {});
       }
-      fetch(SB.base + "/rest/v1/rpc/course_session_stop", { method: "POST", keepalive: true, headers: h,
-        body: JSON.stringify({ p_session: session }) }).catch(function () {});
+      fetch(SB.base + "/rpc", { method: "POST", keepalive: true, headers: h,
+        body: JSON.stringify({ fn: "course_session_stop", args: { p_session: session } }) }).catch(function () {});
     });
   }
   window.addEventListener("pagehide", leave);

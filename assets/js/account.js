@@ -105,10 +105,10 @@
       '</div>' +
 
       '<div class="acc-view" data-acc-view="reset" hidden>' +
-        '<p class="acc-lead">Укажите email аккаунта — пришлём код для нового пароля на почту (и в Telegram, если он привязан).</p>' +
+        '<p class="acc-lead">Укажите email аккаунта — пришлём безопасную ссылку для нового пароля.</p>' +
         '<form class="acc-form" data-acc-form="reset" novalidate>' +
           '<label class="field"><span>Email</span><input name="email" type="email" autocomplete="email" maxlength="254" required /></label>' +
-          '<button class="btn btn--primary btn--lg acc-submit" type="submit">Получить код</button>' +
+          '<button class="btn btn--primary btn--lg acc-submit" type="submit">Получить ссылку</button>' +
         '</form>' +
         '<p class="acc-status" role="status" aria-live="polite"></p>' +
         '<button class="acc-link" type="button" data-acc-show="main">← Вернуться ко входу</button>' +
@@ -148,6 +148,10 @@
       '</div>' +
     '</div></div>');
   doc.body.appendChild(modal);
+  if (COURSES_ONLY) {
+    $(modal, "[data-acc-tg]").hidden = true;
+    $(modal, ".acc-or").hidden = true;
+  }
 
   var lastFocus = null;
   var currentTab = "login";
@@ -202,7 +206,10 @@
     programReady.then(renderGift);
     modal.hidden = false;
     doc.body.classList.add("has-modal");
-    setTimeout(function () { var f = $(modal, "[data-acc-tg]"); if (f) f.focus(); }, 60);
+    setTimeout(function () {
+      var f = $(modal, currentTab === "register" ? '[data-acc-form="register"] input[name="name"]' : '[data-acc-form="login"] input[name="email"]');
+      if (f) f.focus();
+    }, 60);
   }
   function close() {
     stopPoll();
@@ -336,7 +343,14 @@
 
       req.then(function (res) {
         busy(form, false);
-        if (kind === "reset") { resendUntil = Date.now() + 60000; showNewPass(v("email").toLowerCase(), !!(res && res.mail)); return; }
+        if (kind === "reset") {
+          setStatus(form, "Если аккаунт существует, ссылка для нового пароля отправлена на email.", true);
+          return;
+        }
+        if (kind === "register" && res && res.status === "email_sent") {
+          setStatus(form, "Проверьте email и подтвердите регистрацию по ссылке, затем войдите.", true);
+          return;
+        }
         if (kind === "register" && res && res.status === "verify") {
           resendUntil = Date.now() + 60000;
           showVerify(res.email || v("email").toLowerCase());

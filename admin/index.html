@@ -37,24 +37,23 @@
       <div class="cab-state" data-state="loading"><span class="cab-spinner" aria-hidden="true"></span><p>Проверяем доступ…</p></div>
       <section class="cab-state cab-guest" data-state="denied" hidden>
         <h1>Нет доступа</h1>
-        <p data-denied-text>Админ-панель открывается после входа с аккаунта администратора (тот же, что на сайте Физиотеры).</p>
-        <div class="cab-guest__actions"><button class="btn btn--tg btn--lg" type="button" data-open-auth>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4 3 11l6 2 2 6 3-4 5 4Z"/></svg>Войти через Telegram</button></div>
+        <p data-denied-text>Админ-панель открывается после входа с аккаунта администратора.</p>
+        <div class="cab-guest__actions"><button class="btn btn--primary btn--lg" type="button" data-open-auth>Войти</button></div>
       </section>
 
       <div data-state="app" hidden>
         <div class="adm-tabs" role="tablist" aria-label="Разделы">
           <button role="tab" type="button" class="adm-tab" data-tab="overview" hidden aria-selected="true">Обзор</button>
           <button role="tab" type="button" class="adm-tab" data-tab="requests" hidden aria-selected="false">Скидки на приёме <span class="adm-badge" data-pending-badge hidden></span></button>
-          <button role="tab" type="button" class="adm-tab" data-tab="users" aria-selected="false">Клиенты</button>
+          <button role="tab" type="button" class="adm-tab" data-tab="users" hidden aria-selected="false">Клиенты</button>
           <button role="tab" type="button" class="adm-tab" data-tab="referrals" hidden aria-selected="false">Приглашения</button>
           <button role="tab" type="button" class="adm-tab" data-tab="rules" hidden aria-selected="false">Настройка скидок</button>
           <button role="tab" type="button" class="adm-tab" data-tab="broadcast" hidden aria-selected="false">Рассылка</button>
           <button role="tab" type="button" class="adm-tab" data-tab="c-courses" aria-selected="false">Курсы</button>
           <button role="tab" type="button" class="adm-tab" data-tab="c-orders" aria-selected="false">Заказы курсов <span class="adm-badge" data-c-orders-badge hidden></span></button>
-          <button role="tab" type="button" class="adm-tab" data-tab="c-sales" aria-selected="false">Комплекты и промокоды</button>
-          <button role="tab" type="button" class="adm-tab" data-tab="c-stats" aria-selected="false">Аналитика курсов</button>
-          <button role="tab" type="button" class="adm-tab" data-tab="events" aria-selected="false">Журнал событий</button>
+          <button role="tab" type="button" class="adm-tab" data-tab="c-sales" hidden aria-selected="false">Комплекты и промокоды</button>
+          <button role="tab" type="button" class="adm-tab" data-tab="c-stats" hidden aria-selected="false">Аналитика курсов</button>
+          <button role="tab" type="button" class="adm-tab" data-tab="events" hidden aria-selected="false">Журнал событий</button>
         </div>
 
         <section class="adm-panel" data-panel="overview" hidden aria-label="Обзор"></section>
@@ -199,9 +198,10 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/neon-auth.js"></script>
   <script src="/assets/js/sb.js"></script>
   <script src="/assets/js/account.js"></script>
-  <script src="/assets/js/admin.js"></script>
+  <script src="/assets/js/admin-core.js"></script>
   <script src="/assets/js/courses.js"></script>
   <script src="/assets/js/storage-upload.js"></script>
   <script src="/assets/js/admin-courses.js"></script>
