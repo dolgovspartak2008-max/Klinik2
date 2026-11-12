@@ -232,7 +232,7 @@
           var refunded = Number(o.refunded) || 0;
           return "<tr><td><b>№ " + o.order_no + "</b><br><small class=\"cab-muted\">" + esc(dt(o.created_at)) + "</small></td>" +
             '<td>' + esc(o.user.name || "без имени") + ' <span class="adm-no">' + esc(o.user.email || "") + "</span>" +
-              "<br><small class=\"cab-muted\">" + esc(o.user.phone || o.user.email || "") + "</small></td>" +
+              (o.user.phone ? "<br><small class=\"cab-muted\">" + esc(o.user.phone) + "</small>" : "") + "</td>" +
             "<td>" + esc(o.title) + (o.is_gift ? " · 🎁 подарок" : "") + (o.gift ? '<br><small>код <code>' + esc(o.gift.code) + "</code> · " + (o.gift.status === "activated" ? "активирован" : o.gift.status === "cancelled" ? "аннулирован" : "не активирован") + "</small>" : "") +
               (o.note ? '<br><small class="cab-muted">' + esc(o.note) + "</small>" : "") + "</td>" +
             "<td><b>" + money(o.total) + "</b>" + (Number(o.discount) ? '<br><small class="cab-muted">скидка ' + money(o.discount) + (o.promo_code ? " · " + esc(o.promo_code) : "") + "</small>" : "") +
