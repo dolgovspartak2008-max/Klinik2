@@ -210,8 +210,10 @@
         '</div></div><p class="cab-muted cab-small" data-l-status></p>' +
         '<form class="acc-form adm-cform" data-lesson-form hidden><input type="hidden" name="id" value="' + esc(l.id) + '" />' +
           '<input type="hidden" name="hidden" value="' + (l.hidden ? "true" : "false") + '" />' +
-          field("Модуль (например, Плечи — уроки с одинаковым модулем идут одной группой)", "module", l.module || "", { max: 60 }) + field("Название", "title", l.title, { max: 160 }) + field("Описание", "description", l.description, { area: 1, rows: 3 }) +
-          field("Рекомендации к уроку", "recommendations", l.recommendations, { area: 1, rows: 3 }) +
+          field("Модуль (например, Плечи — уроки с одинаковым модулем идут одной группой)", "module", l.module || "", { max: 60 }) + field("Название", "title", l.title, { max: 160 }) +
+          field("Что в этом видео — что делаем и как (строки с «- » станут списком)", "description", l.description, { area: 1, rows: 4 }) +
+          field("Что понадобится — каждый предмет с новой строки (например: коврик, полотенце, стул)", "equipment", l.equipment || "", { area: 1, rows: 3, max: 2000 }) +
+          field("Советы врача к уроку", "recommendations", l.recommendations, { area: 1, rows: 3 }) +
           '<label class="check"><input type="checkbox" name="is_free"' + (l.is_free ? " checked" : "") + " /><span>Бесплатный ознакомительный урок (смотреть можно после входа на сайт, без покупки)</span></label>" +
           '<button class="btn btn--primary btn--sm acc-submit" type="submit">Сохранить урок</button><p class="acc-status" role="status"></p></form></li>';
     }).join("") + "</ol>";

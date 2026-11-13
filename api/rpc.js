@@ -264,6 +264,7 @@ async function adminOverview(sql) {
 }
 
 async function adminCourseGet(sql, args) {
+  await ensureEquipmentColumn(sql);
   const id = uuid(args.p_id);
   const courses = await sql.query(`select * from courses where id = $1`, [id]);
   if (!courses[0]) throw httpError("not_found", 404);
@@ -295,7 +296,17 @@ async function adminCourseSave(sql, args) {
   return { ok: true, id: rows[0].id };
 }
 
+// Колонка lessons.equipment («Что понадобится») появилась позже основной схемы:
+// добавляем её сами при первом обращении админки, чтобы не зависеть от повторного /api/setup.
+let equipmentReady = false;
+async function ensureEquipmentColumn(sql) {
+  if (equipmentReady) return;
+  await sql.query(`alter table lessons add column if not exists equipment text not null default ''`);
+  equipmentReady = true;
+}
+
 async function adminLessonSave(sql, args) {
+  await ensureEquipmentColumn(sql);
   const value = args.p || {};
   if (value.id) {
     const id = uuid(value.id);
@@ -303,7 +314,8 @@ async function adminLessonSave(sql, args) {
     if (!rows[0]) throw httpError("not_found", 404);
     const hidden = value.hidden == null ? rows[0].hidden : !!value.hidden;
     if (!hidden && !rows[0].video_path) throw httpError("no_video");
-    await sql.query(`update lessons set title=$1, module=$2, description=$3, recommendations=$4, is_free=$5, hidden=$6, updated_at=now() where id=$7`, [String(value.title || rows[0].title), String(value.module || ""), String(value.description || ""), String(value.recommendations || ""), !!value.is_free, hidden, id]);
+    const equipment = value.equipment == null ? rows[0].equipment || "" : String(value.equipment).slice(0, 2000);
+    await sql.query(`update lessons set title=$1, module=$2, description=$3, recommendations=$4, equipment=$5, is_free=$6, hidden=$7, updated_at=now() where id=$8`, [String(value.title || rows[0].title), String(value.module || ""), String(value.description || ""), String(value.recommendations || ""), equipment, !!value.is_free, hidden, id]);
     return { ok: true, id };
   }
   const courseId = uuid(value.course_id);
