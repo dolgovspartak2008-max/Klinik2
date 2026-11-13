@@ -13,10 +13,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/assets/css/cab-base.css?v=20261114a" />
-  <link rel="stylesheet" href="/assets/css/account.css?v=20261114a" />
-  <link rel="stylesheet" href="/assets/css/courses.css?v=20261114a" />
-  <link rel="stylesheet" href="/assets/css/cab-theme.css?v=20261114a" />
+  <link rel="stylesheet" href="/assets/css/cab-base.css?v=20261114b" />
+  <link rel="stylesheet" href="/assets/css/account.css?v=20261114b" />
+  <link rel="stylesheet" href="/assets/css/courses.css?v=20261114b" />
+  <link rel="stylesheet" href="/assets/css/cab-theme.css?v=20261114b" />
 </head>
 <body class="cab-page crs-page" data-page="player">
   <a class="skip-link" href="#main">Перейти к содержимому</a>
@@ -80,7 +80,9 @@
                   <div class="ply-seek__track"><i class="ply-seek__buf" data-buf></i><i class="ply-seek__fill" data-fill></i></div>
                 </div>
                 <div class="ply-row">
+                  <button class="ply-btn" type="button" data-back aria-label="Назад на 10 секунд"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4h4"/><text x="12" y="15.5" text-anchor="middle" font-size="8" font-weight="800" fill="currentColor" stroke="none">10</text></svg></button>
                   <button class="ply-btn" type="button" data-play aria-label="Смотреть"></button>
+                  <button class="ply-btn" type="button" data-fwd aria-label="Вперёд на 10 секунд"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/><text x="12" y="15.5" text-anchor="middle" font-size="8" font-weight="800" fill="currentColor" stroke="none">10</text></svg></button>
                   <button class="ply-btn" type="button" data-mute aria-label="Звук"></button>
                   <input class="ply-vol" type="range" min="0" max="1" step="0.05" value="1" data-vol aria-label="Громкость" />
                   <span class="ply-time" data-time>0:00 / 0:00</span>
@@ -112,6 +114,11 @@
             </section>
 
             <p class="lrn-empty" data-info-empty hidden>Описание к этому уроку скоро появится.</p>
+
+            <a class="lrn-ask" data-ask href="#" target="_blank" rel="noopener" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.1z"/><path d="M9 10h6M9 13h4"/></svg>
+              <span><b>Есть вопрос по упражнению?</b><small>Напишите врачу в WhatsApp — название урока подставится само</small></span>
+            </a>
 
             <div class="lrn-nav">
               <button class="btn btn--outline" type="button" data-prev hidden>← Предыдущий</button>

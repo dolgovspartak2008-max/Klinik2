@@ -90,11 +90,39 @@
         }).then(function () { return u.path; });
       });
   }
+  // Где в mp4 лежит оглавление (moov): если в конце файла — браузер не может начать показ,
+  // пока не дотянется до конца, и ролик «долго грузится». Читаем только заголовки блоков.
+  function mp4MoovFirst(file) {
+    function at(pos) {
+      if (pos + 8 > file.size) return Promise.resolve(null);
+      return file.slice(pos, pos + 16).arrayBuffer().then(function (buf) {
+        var v = new DataView(buf), size = v.getUint32(0), type = String.fromCharCode(v.getUint8(4), v.getUint8(5), v.getUint8(6), v.getUint8(7));
+        if (size === 1 && buf.byteLength >= 16) size = v.getUint32(8) * 4294967296 + v.getUint32(12);
+        if (type === "moov") return true;
+        if (type === "mdat") return false;
+        if (size < 8) return null;
+        return at(pos + size);
+      });
+    }
+    return at(0).catch(function () { return null; });
+  }
+  function videoAdvice(file, dur) {
+    return mp4MoovFirst(file).then(function (moovFirst) {
+      var mbit = dur ? file.size * 8 / dur / 1e6 : 0, problems = [];
+      if (moovFirst === false) problems.push("файл не подготовлен для интернета — видео начнёт показываться только после долгой загрузки");
+      if (mbit > 5) problems.push("файл тяжёлый: " + mbit.toFixed(1) + " Мбит/с (для телефона хватает 2–4) — на мобильном интернете будет подтормаживать");
+      if (!problems.length) return true;
+      return confirm("Внимание: " + problems.join("; ") + ".\n\nЛучше пересохранить ролик: HandBrake → пресет «Fast 1080p30» → галочка «Web Optimized», " +
+        "или ffmpeg -i in.mp4 -vf scale=-2:1280 -c:v libx264 -crf 26 -preset slow -c:a aac -b:a 128k -movflags +faststart out.mp4\n\nВсё равно загрузить этот файл?");
+    });
+  }
   function uploadVideo(lessonId, file, status) {
     if (file.type && file.type !== "video/mp4") return Promise.reject({ message: SB.message("video_format") });
     if (file.size > U.MAX_VIDEO_BYTES) return Promise.reject({ message: SB.message("video_too_big") });
     var dur = 0;
-    return videoDuration(file).then(function (d) { dur = d; return upload("video", "lesson", lessonId, file, function (p) { status.textContent = "Загрузка: " + Math.round(p * 100) + "%"; }); })
+    return videoDuration(file).then(function (d) { dur = d; return videoAdvice(file, d); })
+      .then(function (ok) { if (!ok) throw { message: "Загрузка отменена — пересохраните ролик и загрузите снова." }; })
+      .then(function () { return upload("video", "lesson", lessonId, file, function (p) { status.textContent = "Загрузка: " + Math.round(p * 100) + "%"; }); })
       .then(function (path) { status.textContent = "Сохраняем…"; return SB.courses("admin_attach_video", { lesson_id: lessonId, path: path, size: file.size, duration: dur }); });
   }
   function uploadImage(kind, id, file) {
@@ -198,7 +226,8 @@
     return '<ol class="adm-lessons">' + c.lessons.map(function (l, i) {
       return '<li class="adm-lesson" data-lesson-row="' + esc(l.id) + '"><div class="adm-lesson__head">' +
         '<span class="adm-lesson__n">' + (i + 1) + "</span><div>" + (l.module ? '<span class="adm-module">' + esc(l.module) + "</span> " : "") + "<b>" + esc(l.title) + "</b><br><small class=\"cab-muted\">" +
-        (l.has_video ? "видео " + (l.duration_sec ? C.clock(l.duration_sec) : "") + (l.video_size ? " · " + (l.video_size / 1048576).toFixed(1) + " МБ" : "") : "⚠️ видео не загружено") +
+        (l.has_video ? "видео " + (l.duration_sec ? C.clock(l.duration_sec) : "") + (l.video_size ? " · " + (l.video_size / 1048576).toFixed(1) + " МБ" : "") +
+          (l.video_size && l.duration_sec && l.video_size * 8 / l.duration_sec / 1e6 > 5 ? " · ⚠️ тяжёлый файл (" + (l.video_size * 8 / l.duration_sec / 1e6).toFixed(1) + " Мбит/с), может долго грузиться" : "") : "⚠️ видео не загружено") +
         " · " + (l.hidden ? "скрыт" : "опубликован") + (l.is_free ? " · бесплатный" : "") + " · смотрели: " + l.viewers + ", прошли: " + l.completed + "</small></div>" +
         '<div class="adm-actions">' +
           (i > 0 ? '<button class="acc-link" type="button" data-l-move="-1" aria-label="Выше">↑</button>' : "") +

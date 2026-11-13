@@ -73,6 +73,23 @@
   // ------------------------------------------------------------ загрузка урока
   function stopTimers() { clearInterval(beat); clearInterval(saveTimer); beat = saveTimer = null; }
 
+  // Ссылку на видео запрашиваем заранее, пока человек читает описание урока:
+  // браузер успевает подгрузить начало ролика, и по кнопке «Смотреть» видео стартует сразу.
+  var prepared = null;
+  function prepare(l) {
+    prepared = null;
+    if (!l || !l.can_watch) return;
+    var item = { id: l.id, at: Date.now(), p: SB.courses("play", { lesson_id: l.id, device_id: DEVICE, force: false }) };
+    prepared = item;
+    item.p.then(function (r) {
+      if (prepared !== item || lesson !== l || video.getAttribute("src")) return;
+      session = r.session_id;
+      video.preload = "auto";
+      video.src = r.url;
+      startBeat();
+    }).catch(function () { if (prepared === item) prepared = null; });
+  }
+
   function start(force) {
     if (!lesson) return;
     if (!lesson.can_watch) return locked();
@@ -81,16 +98,21 @@
     spin.hidden = false;
     var pos = pendingSeek != null ? pendingSeek : (!lesson.completed && lesson.position_sec && lesson.duration_sec && lesson.position_sec < lesson.duration_sec - 5 ? Number(lesson.position_sec) : 0);
     pendingSeek = null;
-    return SB.courses("play", { lesson_id: lesson.id, device_id: DEVICE, force: !!force }).then(function (r) {
+    // заранее полученная ссылка годится, если ей меньше 8 минут (живёт 10)
+    var ready = !force && prepared && prepared.id === lesson.id && Date.now() - prepared.at < 480000 ? prepared.p : null;
+    prepared = null;
+    var req = ready || SB.courses("play", { lesson_id: lesson.id, device_id: DEVICE, force: !!force });
+    return req.then(function (r) {
       session = r.session_id;
       retries = 0;
-      video.src = r.url;
-      video.addEventListener("loadedmetadata", function once() {
-        video.removeEventListener("loadedmetadata", once);
+      if (video.getAttribute("src") !== r.url) { video.preload = "auto"; video.src = r.url; }
+      function go() {
         if (pos > 0 && pos < video.duration - 1) video.currentTime = pos;
         var p = video.play();
         if (p && p.catch) p.catch(function () { spin.hidden = true; bigPlayResume(); });
-      });
+      }
+      if (video.readyState >= 1) go();
+      else video.addEventListener("loadedmetadata", function once() { video.removeEventListener("loadedmetadata", once); go(); });
       startBeat();
     }).catch(function (e) {
       spin.hidden = true;
@@ -203,6 +225,7 @@
   // ссылка истекла или сеть пропала — запрашиваем новую ссылку и продолжаем с того же места
   video.addEventListener("error", function () {
     if (!video.getAttribute("src") || !lesson) return;
+    if (box.classList.contains("is-off")) { video.removeAttribute("src"); video.load(); return; }
     if (retries++ >= 2) { showVeil("<b>Не удалось воспроизвести видео</b><p>Проверьте интернет и попробуйте ещё раз.</p>",
       [{ text: "Повторить", onClick: function () { retries = 0; pendingSeek = video.currentTime || null; start(false); } }]); return; }
     pendingSeek = video.currentTime || null;
@@ -230,9 +253,39 @@
     if (video.buffered.length && d) buf.style.width = Math.min(100, video.buffered.end(video.buffered.length - 1) / d * 100) + "%";
     time.textContent = C.clock(t) + " / " + C.clock(d);
   }
-  function toggle() { if (!video.getAttribute("src")) return start(false); if (video.paused) video.play(); else video.pause(); }
+  function toggle() {
+    if (box.classList.contains("is-off") || !video.getAttribute("src")) return start(false);
+    if (video.paused) video.play(); else video.pause();
+  }
   playBtn.addEventListener("click", toggle);
-  video.addEventListener("click", toggle);
+
+  // ±10 секунд: кнопки на панели и двойное касание по левой/правой части видео (как в YouTube)
+  var flash = doc.createElement("span");
+  flash.className = "ply-jump"; flash.hidden = true; box.appendChild(flash);
+  var flashTimer = null;
+  function jump(sec) {
+    if (box.classList.contains("is-off")) return;
+    var d = video.duration || 0;
+    video.currentTime = Math.max(0, Math.min(d ? d - 0.2 : Infinity, (video.currentTime || 0) + sec));
+    flash.textContent = (sec < 0 ? "‹‹ " : "") + Math.abs(sec) + " сек" + (sec > 0 ? " ››" : "");
+    flash.className = "ply-jump " + (sec < 0 ? "is-left" : "is-right");
+    flash.hidden = false;
+    clearTimeout(flashTimer); flashTimer = setTimeout(function () { flash.hidden = true; }, 650);
+    progressUi(); wake();
+  }
+  $("[data-back]", box).addEventListener("click", function () { jump(-10); });
+  $("[data-fwd]", box).addEventListener("click", function () { jump(10); });
+  var tapTimer = null;
+  video.addEventListener("click", function (e) {
+    if (box.classList.contains("is-off")) return toggle();
+    if (tapTimer) { // второе касание — перемотка
+      clearTimeout(tapTimer); tapTimer = null;
+      var r = video.getBoundingClientRect(), x = (e.clientX - r.left) / r.width;
+      if (x < 0.4) jump(-10); else if (x > 0.6) jump(10); else toggle();
+      return;
+    }
+    tapTimer = setTimeout(function () { tapTimer = null; toggle(); }, 260);
+  });
   muteBtn.addEventListener("click", function () { video.muted = !video.muted; sync(); });
   vol.addEventListener("input", function () { video.volume = Number(vol.value); video.muted = video.volume === 0; sync(); });
   var RATES = [1, 1.25, 1.5, 0.75];
@@ -251,8 +304,8 @@
   seek.addEventListener("pointermove", function (e) { if (dragging) seekTo(e); });
   seek.addEventListener("pointerup", function () { dragging = false; save(false); });
   seek.addEventListener("keydown", function (e) {
-    if (e.key === "ArrowRight") { video.currentTime += 5; e.preventDefault(); }
-    if (e.key === "ArrowLeft") { video.currentTime -= 5; e.preventDefault(); }
+    if (e.key === "ArrowRight") { jump(5); e.preventDefault(); }
+    if (e.key === "ArrowLeft") { jump(-5); e.preventDefault(); }
   });
 
   // Во весь экран разворачиваем контейнер (а не само видео), чтобы водяной знак оставался поверх.
@@ -274,8 +327,8 @@
     if (e.target.closest("input, textarea, select, button")) return;
     if (e.key === " " || e.key === "k") { e.preventDefault(); toggle(); }
     if (e.key === "Escape" && box.classList.contains("is-pseudo-fs")) { box.classList.remove("is-pseudo-fs"); doc.body.classList.remove("has-modal"); }
-    if (e.key === "ArrowRight") video.currentTime += 5;
-    if (e.key === "ArrowLeft") video.currentTime -= 5;
+    if (e.key === "ArrowRight") jump(5);
+    if (e.key === "ArrowLeft") jump(-5);
   });
   // прятать панель, когда видео идёт и мышь не двигается
   function wake() {
@@ -375,6 +428,10 @@
     var done = $("[data-done]");
     done.hidden = !lesson.can_watch || lesson.completed;
     done.onclick = function () { save(true).then(function () { lesson.completed = true; toast("Урок отмечен как пройденный"); renderList(); renderInfo(); }); };
+    var ask = $("[data-ask]"), wa = window.SITE_CONTACTS && window.SITE_CONTACTS.whatsapp;
+    ask.hidden = !wa;
+    if (wa) ask.href = wa + (wa.indexOf("?") >= 0 ? "&" : "?") + "text=" + encodeURIComponent(
+      "Здравствуйте! У меня вопрос по онлайн-курсу «" + data.course.title + "», урок «" + lesson.title + "»: ");
     doc.title = lesson.title + " — " + data.course.title;
   }
 
@@ -392,7 +449,8 @@
     progressUi(); sync();
     renderList(); renderInfo();
     if (!l.can_watch) return locked();
-    if (autoplay) start(false); else bigPlay();
+    prepared = null;
+    if (autoplay) start(false); else { bigPlay(); prepare(l); }
     if (autoplay) {
       var top = $("[data-main]").getBoundingClientRect().top;
       if (top < 0 || top > window.innerHeight * 0.4) $("[data-main]").scrollIntoView({ behavior: "smooth", block: "start" });
