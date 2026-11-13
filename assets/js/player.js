@@ -255,22 +255,47 @@
   // Во весь экран разворачиваем контейнер (а не само видео), чтобы водяной знак оставался поверх.
   // На iPhone полноэкранный режим для элементов недоступен — используем растягивание на весь экран.
   function isFs() { return doc.fullscreenElement === box || doc.webkitFullscreenElement === box || box.classList.contains("is-pseudo-fs"); }
+
+  // «Псевдо-полноэкранный» режим (iPhone): плеер растягивается на весь экран, а страница под ним
+  // замораживается — не видна и не прокручивается. Позицию прокрутки запоминаем и возвращаем при выходе.
+  var lockedY = 0;
+  function blockScroll(e) { if (box.classList.contains("is-pseudo-fs")) e.preventDefault(); }
+  function enterPseudo() {
+    if (box.classList.contains("is-pseudo-fs")) return;
+    lockedY = window.scrollY || doc.documentElement.scrollTop || 0;
+    doc.body.style.top = -lockedY + "px";
+    doc.documentElement.classList.add("ply-fs-lock");
+    doc.body.classList.add("has-modal");
+    box.classList.add("is-pseudo-fs");
+    doc.addEventListener("touchmove", blockScroll, { passive: false });
+    doc.addEventListener("wheel", blockScroll, { passive: false });
+  }
+  function exitPseudo() {
+    if (!box.classList.contains("is-pseudo-fs")) return;
+    box.classList.remove("is-pseudo-fs");
+    doc.body.classList.remove("has-modal");
+    doc.documentElement.classList.remove("ply-fs-lock");
+    doc.body.style.top = "";
+    doc.removeEventListener("touchmove", blockScroll, { passive: false });
+    doc.removeEventListener("wheel", blockScroll, { passive: false });
+    window.scrollTo(0, lockedY);
+  }
   fsBtn.addEventListener("click", function () {
     if (isFs()) {
-      if (box.classList.contains("is-pseudo-fs")) { box.classList.remove("is-pseudo-fs"); doc.body.classList.remove("has-modal"); }
+      if (box.classList.contains("is-pseudo-fs")) exitPseudo();
       else (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc);
       return;
     }
     var req = box.requestFullscreen || box.webkitRequestFullscreen;
     if (req) {
       var p = req.call(box);
-      if (p && p.catch) p.catch(function () { box.classList.add("is-pseudo-fs"); doc.body.classList.add("has-modal"); });
-    } else { box.classList.add("is-pseudo-fs"); doc.body.classList.add("has-modal"); }
+      if (p && p.catch) p.catch(enterPseudo);
+    } else enterPseudo();
   });
   doc.addEventListener("keydown", function (e) {
     if (e.target.closest("input, textarea, select, button")) return;
     if (e.key === " " || e.key === "k") { e.preventDefault(); toggle(); }
-    if (e.key === "Escape" && box.classList.contains("is-pseudo-fs")) { box.classList.remove("is-pseudo-fs"); doc.body.classList.remove("has-modal"); }
+    if (e.key === "Escape") exitPseudo();
     if (e.key === "ArrowRight") video.currentTime += 5;
     if (e.key === "ArrowLeft") video.currentTime -= 5;
   });

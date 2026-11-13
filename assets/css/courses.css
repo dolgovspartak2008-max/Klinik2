@@ -200,7 +200,14 @@
 }
 .ply-box video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; }
 .ply-box:fullscreen { border-radius: 0; max-height: none; aspect-ratio: auto; }
-.ply-box.is-pseudo-fs { position: fixed; inset: 0; z-index: 200; width: 100vw; height: 100svh; max-height: none; aspect-ratio: auto; border-radius: 0; }
+/* Псевдо-полноэкранный режим (iPhone): плеер на весь видимый экран, страница под ним скрыта и заморожена */
+.ply-box.is-pseudo-fs {
+  position: fixed; inset: 0; z-index: 1000; width: auto; height: auto; max-width: none; max-height: none; margin: 0;
+  aspect-ratio: auto; border-radius: 0; visibility: visible; touch-action: none; overscroll-behavior: none;
+}
+.ply-box.is-pseudo-fs .ply-ctrl { padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+html.ply-fs-lock, html.ply-fs-lock body { overflow: hidden; overscroll-behavior: none; background: #000; }
+html.ply-fs-lock body { position: fixed; left: 0; right: 0; width: 100%; visibility: hidden; }
 .ply-wm {
   position: absolute; z-index: 2; left: 10%; top: 12%; pointer-events: none;
   padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: .02em;
