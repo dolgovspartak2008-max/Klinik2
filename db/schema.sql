@@ -62,6 +62,9 @@ create table if not exists lessons (
   updated_at timestamptz not null default now()
 );
 
+-- «Что понадобится» к уроку: предметы, по одному на строку
+alter table lessons add column if not exists equipment text not null default '';
+
 create table if not exists course_orders (
   id uuid primary key default gen_random_uuid(),
   order_no bigint generated always as identity unique,

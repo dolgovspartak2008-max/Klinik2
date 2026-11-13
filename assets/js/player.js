@@ -45,6 +45,7 @@
 
   // ------------------------------------------------------------ экран-заглушка поверх видео
   function showVeil(html, actions) {
+    veil.classList.remove("is-start");
     veil.innerHTML = html;
     (actions || []).forEach(function (a) {
       var b = doc.createElement(a.href ? "a" : "button");
@@ -56,9 +57,10 @@
     });
     veil.hidden = false;
   }
-  function hideVeil() { veil.hidden = true; veil.innerHTML = ""; }
+  function hideVeil() { veil.hidden = true; veil.innerHTML = ""; veil.classList.remove("is-start"); }
   function bigPlay() {
-    showVeil('<button class="ply-big" type="button" aria-label="Смотреть урок"><svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg></button>');
+    showVeil('<button class="ply-big" type="button" aria-label="Смотреть урок"><svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg></button><span class="ply-veil__cap">Смотреть урок</span>');
+    veil.classList.add("is-start");
     $(".ply-big", veil).addEventListener("click", function () { start(false); });
   }
 
@@ -75,6 +77,7 @@
     if (!lesson) return;
     if (!lesson.can_watch) return locked();
     hideVeil();
+    box.classList.remove("is-off");
     spin.hidden = false;
     var pos = pendingSeek != null ? pendingSeek : (!lesson.completed && lesson.position_sec && lesson.duration_sec && lesson.position_sec < lesson.duration_sec - 5 ? Number(lesson.position_sec) : 0);
     pendingSeek = null;
@@ -292,38 +295,86 @@
   }
   function renderTotal() {
     var p = data.progress || {};
+    var total = p.total || data.lessons.length, done = p.completed || 0;
     $("[data-total]").innerHTML = data.access
-      ? '<div class="crs-progress"><i style="width:' + (p.percent || 0) + '%"></i></div><span>' + (p.completed || 0) + " из " + (p.total || 0) + " · " + (p.percent || 0) + "%</span>"
+      ? '<span class="lrn-head__count">Пройдено <b>' + done + "</b> из " + C.plural(total, "урока", "уроков", "уроков") + "</span>" +
+        '<div class="crs-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + (p.percent || 0) + '"><i style="width:' + (p.percent || 0) + '%"></i></div>'
       : "";
   }
+
+  // уроки, сгруппированные по модулям (порядок — как в курсе)
+  function groups() {
+    var out = [], byName = {};
+    data.lessons.forEach(function (l) {
+      var name = l.module || "";
+      if (!byName[name]) { byName[name] = { name: name, lessons: [] }; out.push(byName[name]); }
+      byName[name].lessons.push(l);
+    });
+    return out;
+  }
+  var ICON_DONE = '<svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>';
+  var ICON_NOW = '<svg viewBox="0 0 24 24"><path class="is-fill" d="M8 5v14l11-7z"/></svg>';
+  var ICON_LOCK = '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+
   function renderList() {
-    var lastModule = null, hasModules = data.lessons.some(function (l) { return l.module; }), mNo = 0;
-    $("[data-list]").innerHTML = data.lessons.map(function (l, i) {
-      var head = "";
-      if (hasModules && (l.module || "") !== lastModule) {
-        lastModule = l.module || ""; mNo++;
-        head = '<li class="ply-module" aria-hidden="false"><span>Модуль ' + mNo + "</span>" + esc(lastModule || "Другие уроки") + "</li>";
-      }
-      return head + '<li><button type="button" class="ply-item' + (l.completed ? " is-done" : "") + (l.can_watch ? "" : " is-locked") + '" data-lesson="' + esc(l.id) + '"' +
-        (lesson && lesson.id === l.id ? ' aria-current="true"' : "") + '><span class="ply-item__n">' + (l.completed ? "✓" : i + 1) + "</span>" +
-        "<span><b>" + esc(l.title) + "</b><small>" + (l.duration_sec ? C.clock(l.duration_sec) : "") + (l.is_free && !data.access ? " · бесплатно" : "") +
-        (!l.can_watch ? " · после покупки" : "") + "</small></span>" + (l.can_watch ? "" : '<span aria-hidden="true">🔒</span>') + "</button></li>";
+    var gs = groups(), single = gs.length === 1 && !gs[0].name;
+    $("[data-list]").innerHTML = gs.map(function (g) {
+      var done = g.lessons.filter(function (l) { return l.completed; }).length;
+      var has = lesson && g.lessons.indexOf(lesson) >= 0;
+      return '<section class="lrn-module' + (has ? " is-current" : "") + (done === g.lessons.length ? " is-done" : "") + '">' +
+        '<header class="lrn-module__head"><h3>' + esc(single ? "Уроки" : g.name || "Другие уроки") + "</h3>" +
+        "<small>" + (data.access && done === g.lessons.length ? "✓ пройдено" : data.access && done ? "пройдено " + done + " из " + g.lessons.length : C.plural(g.lessons.length, "урок", "урока", "уроков")) + "</small></header>" +
+        '<ul class="lrn-module__list">' + g.lessons.map(function (l) {
+          var cur = lesson && lesson.id === l.id;
+          var icon = !l.can_watch ? ICON_LOCK : cur ? ICON_NOW : l.completed ? ICON_DONE : "";
+          var note = !l.can_watch ? "после покупки" : l.completed ? "пройден" : l.is_free && !data.access ? "бесплатно" : "";
+          return '<li><button type="button" class="lrn-item' + (l.completed ? " is-done" : "") + (l.can_watch ? "" : " is-locked") + '" data-lesson="' + esc(l.id) + '"' +
+            (cur ? ' aria-current="true"' : "") + '><span class="lrn-item__ico" aria-hidden="true">' + icon + "</span>" +
+            '<span class="lrn-item__text"><b>' + esc(l.title) + "</b>" +
+            (l.duration_sec || note ? "<small>" + [l.duration_sec ? C.dur(l.duration_sec) : "", note].filter(Boolean).join(" · ") + "</small>" : "") +
+            "</span></button></li>";
+        }).join("") + "</ul></section>";
     }).join("");
     renderTotal();
   }
+
+  // «Что понадобится»: каждая строка (или через запятую) — отдельный предмет
+  function kitItems(t) {
+    var lines = String(t || "").split(/\n/).map(function (x) { return x.trim().replace(/^[-•–*]\s*/, ""); }).filter(Boolean);
+    if (lines.length === 1 && lines[0].indexOf(",") > 0) lines = lines[0].split(",").map(function (x) { return x.trim(); }).filter(Boolean);
+    return lines;
+  }
+
+  function prevLesson() {
+    var ls = data.lessons, i = ls.indexOf(lesson);
+    for (var j = i - 1; j >= 0; j--) if (ls[j].can_watch) return ls[j];
+    return null;
+  }
+
   function renderInfo() {
+    var i = data.lessons.indexOf(lesson);
+    $("[data-where]").textContent = (lesson.module ? lesson.module + " · " : "") + "урок " + (i + 1) + " из " + data.lessons.length;
     $("[data-title]").textContent = lesson.title;
-    $("[data-desc]").innerHTML = C.richText(lesson.description);
-    var rec = $("[data-rec]");
-    rec.hidden = !lesson.recommendations;
-    $("[data-rec-text]").innerHTML = C.richText(lesson.recommendations);
-    var next = nextLesson();
-    var nb = $("[data-next]");
-    nb.hidden = !next;
+    $("[data-meta]").innerHTML = [lesson.duration_sec ? "Длительность " + C.dur(lesson.duration_sec) : "",
+      lesson.completed ? '<span class="lrn-tag">✓ Пройден</span>' : ""].filter(Boolean).join(" ");
+
+    var desc = String(lesson.description || "").trim(), kit = kitItems(lesson.equipment), rec = String(lesson.recommendations || "").trim();
+    $("[data-desc-block]").hidden = !desc;
+    $("[data-desc]").innerHTML = C.richText(desc);
+    $("[data-kit-block]").hidden = !kit.length;
+    $("[data-kit]").innerHTML = kit.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("");
+    $("[data-rec]").hidden = !rec;
+    $("[data-rec-text]").innerHTML = C.richText(rec);
+    $("[data-info-empty]").hidden = !!(desc || kit.length || rec);
+
+    var next = nextLesson(), prev = prevLesson();
+    var nb = $("[data-next]"), pb = $("[data-prev]");
+    nb.hidden = !next; pb.hidden = !prev;
     if (next) nb.onclick = function () { select(next.id, true); };
+    if (prev) pb.onclick = function () { select(prev.id, true); };
     var done = $("[data-done]");
     done.hidden = !lesson.can_watch || lesson.completed;
-    done.onclick = function () { save(true).then(function () { toast("Урок отмечен как пройденный"); renderInfo(); }); };
+    done.onclick = function () { save(true).then(function () { lesson.completed = true; toast("Урок отмечен как пройденный"); renderList(); renderInfo(); }); };
     doc.title = lesson.title + " — " + data.course.title;
   }
 
@@ -336,12 +387,16 @@
     try { history.replaceState(null, "", "?l=" + encodeURIComponent(l.id)); } catch (e) {}
     video.pause();
     video.removeAttribute("src"); video.load();
+    box.classList.add("is-off");
     video.poster = l.poster_url || "";
     progressUi(); sync();
     renderList(); renderInfo();
     if (!l.can_watch) return locked();
     if (autoplay) start(false); else bigPlay();
-    if (window.matchMedia("(max-width: 860px)").matches && autoplay) box.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (autoplay) {
+      var top = $("[data-main]").getBoundingClientRect().top;
+      if (top < 0 || top > window.innerHeight * 0.4) $("[data-main]").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }
 
   $("[data-list]").addEventListener("click", function (e) {
@@ -356,6 +411,7 @@
       data = d;
       $("[data-course-link]").href = "/kursy/" + encodeURIComponent(slug) + "/";
       $("[data-crumb]").textContent = d.course.title;
+      $("[data-course-title]").textContent = d.course.title;
       wm.textContent = d.watermark || "";
       moveWm(); wmTimer = setInterval(moveWm, 17000);
       $("[data-contra]").innerHTML = C.richText(d.course.contraindications);

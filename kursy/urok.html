@@ -13,10 +13,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/assets/css/cab-base.css?v=20261113c" />
-  <link rel="stylesheet" href="/assets/css/account.css?v=20261113c" />
-  <link rel="stylesheet" href="/assets/css/courses.css?v=20261113c" />
-  <link rel="stylesheet" href="/assets/css/cab-theme.css?v=20261113c" />
+  <link rel="stylesheet" href="/assets/css/cab-base.css?v=20261114a" />
+  <link rel="stylesheet" href="/assets/css/account.css?v=20261114a" />
+  <link rel="stylesheet" href="/assets/css/courses.css?v=20261114a" />
+  <link rel="stylesheet" href="/assets/css/cab-theme.css?v=20261114a" />
 </head>
 <body class="cab-page crs-page" data-page="player">
   <a class="skip-link" href="#main">Перейти к содержимому</a>
@@ -58,51 +58,82 @@
         <p>Мы пришлём уведомление в Telegram, когда опубликуем первый урок.</p>
       </section>
 
-      <div class="ply" data-state="ready" hidden>
-        <div>
-          <div class="ply-box" data-ply>
-            <video playsinline preload="metadata" controlslist="nodownload noremoteplayback" disablepictureinpicture disableremoteplayback></video>
-            <span class="ply-wm" data-wm aria-hidden="true"></span>
-            <span class="ply-spin" data-spin hidden></span>
-            <div class="ply-veil" data-veil hidden></div>
-            <div class="ply-ctrl">
-              <div class="ply-seek" data-seek role="slider" tabindex="0" aria-label="Перемотка">
-                <div class="ply-seek__track"><i class="ply-seek__buf" data-buf></i><i class="ply-seek__fill" data-fill></i></div>
-              </div>
-              <div class="ply-row">
-                <button class="ply-btn" type="button" data-play aria-label="Смотреть"></button>
-                <button class="ply-btn" type="button" data-mute aria-label="Звук"></button>
-                <input class="ply-vol" type="range" min="0" max="1" step="0.05" value="1" data-vol aria-label="Громкость" />
-                <span class="ply-time" data-time>0:00 / 0:00</span>
-                <button class="ply-btn ply-rate" type="button" data-rate aria-label="Скорость">1×</button>
-                <button class="ply-btn" type="button" data-fs aria-label="Во весь экран"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      <div class="lrn" data-state="ready" hidden>
+        <header class="lrn-head">
+          <div>
+            <p class="lrn-head__eyebrow">Ваш курс</p>
+            <p class="lrn-head__title" data-course-title></p>
+          </div>
+          <div class="lrn-head__progress" data-total></div>
+        </header>
+        <p class="buy-note buy-note--warn" data-blocked hidden>Доступ к курсам на аккаунте приостановлен. Позвоните в клинику: +7 993 044-06-19.</p>
+
+        <div class="lrn-main" data-main>
+          <div class="lrn-video">
+            <div class="ply-box is-off" data-ply>
+              <video playsinline preload="metadata" controlslist="nodownload noremoteplayback" disablepictureinpicture disableremoteplayback></video>
+              <span class="ply-wm" data-wm aria-hidden="true"></span>
+              <span class="ply-spin" data-spin hidden></span>
+              <div class="ply-veil" data-veil hidden></div>
+              <div class="ply-ctrl">
+                <div class="ply-seek" data-seek role="slider" tabindex="0" aria-label="Перемотка">
+                  <div class="ply-seek__track"><i class="ply-seek__buf" data-buf></i><i class="ply-seek__fill" data-fill></i></div>
+                </div>
+                <div class="ply-row">
+                  <button class="ply-btn" type="button" data-play aria-label="Смотреть"></button>
+                  <button class="ply-btn" type="button" data-mute aria-label="Звук"></button>
+                  <input class="ply-vol" type="range" min="0" max="1" step="0.05" value="1" data-vol aria-label="Громкость" />
+                  <span class="ply-time" data-time>0:00 / 0:00</span>
+                  <button class="ply-btn ply-rate" type="button" data-rate aria-label="Скорость">1×</button>
+                  <button class="ply-btn" type="button" data-fs aria-label="Во весь экран"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div class="ply__side">
-          <p class="buy-note buy-note--warn" data-blocked hidden>Доступ к курсам на аккаунте приостановлен. Позвоните в клинику: +7 993 044-06-19.</p>
-          <section class="cab-block ply-info">
-            <p class="ply-info__course">Урок</p>
-            <h1 data-title></h1>
-            <div class="crs-text" data-desc></div>
-            <div data-rec hidden><h3>Рекомендации</h3><div class="crs-text" data-rec-text></div></div>
-            <div class="ply-info__actions">
-              <button class="btn btn--primary" type="button" data-next hidden>Следующий урок</button>
+
+          <article class="lrn-lesson" aria-live="polite">
+            <p class="lrn-lesson__where" data-where></p>
+            <h1 class="lrn-lesson__title" data-title></h1>
+            <p class="lrn-lesson__meta" data-meta></p>
+
+            <section class="lrn-card" data-desc-block>
+              <h2><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/></svg>Что в этом видео</h2>
+              <div class="crs-text" data-desc></div>
+            </section>
+
+            <section class="lrn-card lrn-card--kit" data-kit-block>
+              <h2><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Что понадобится</h2>
+              <ul class="lrn-kit" data-kit></ul>
+            </section>
+
+            <section class="lrn-card lrn-card--tip" data-rec>
+              <h2><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z"/></svg>Советы врача</h2>
+              <div class="crs-text" data-rec-text></div>
+            </section>
+
+            <p class="lrn-empty" data-info-empty hidden>Описание к этому уроку скоро появится.</p>
+
+            <div class="lrn-nav">
+              <button class="btn btn--outline" type="button" data-prev hidden>← Предыдущий</button>
               <button class="btn btn--outline" type="button" data-done hidden>Отметить как пройденный</button>
+              <button class="btn btn--primary" type="button" data-next hidden>Следующий урок →</button>
             </div>
-          </section>
-          <section class="cab-block">
-            <h2>Уроки курса</h2>
-            <div class="ply-total" data-total></div>
-            <ol class="ply-list" data-list></ol>
-            <p class="cab-muted cab-small" data-buy-hint hidden>Остальные уроки откроются после покупки курса.</p>
-          </section>
-          <details class="cab-block crs-block--warn" data-contra-block>
-            <summary><b>Противопоказания и меры предосторожности</b></summary>
-            <div class="crs-text" data-contra></div>
-          </details>
+          </article>
         </div>
+
+        <section class="lrn-program" aria-labelledby="lrn-program-title">
+          <div class="lrn-program__head">
+            <h2 id="lrn-program-title">Программа курса</h2>
+            <p class="cab-muted">Нажмите на урок — видео откроется выше.</p>
+          </div>
+          <div class="lrn-modules" data-list></div>
+          <p class="cab-muted cab-small" data-buy-hint hidden>Остальные уроки откроются после покупки курса.</p>
+        </section>
+
+        <details class="cab-block crs-block--warn lrn-contra" data-contra-block>
+          <summary><b>Противопоказания и меры предосторожности</b></summary>
+          <div class="crs-text" data-contra></div>
+        </details>
       </div>
     </div>
   </main>
