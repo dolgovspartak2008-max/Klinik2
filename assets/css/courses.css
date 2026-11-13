@@ -405,3 +405,34 @@
 @media (max-width: 760px) { .adm-inline-form { grid-template-columns: 1fr; } }
 .adm-panel > .adm-actions .btn, .adm-cbar .btn, .adm-cform > .adm-actions .btn { width: auto; flex: none; }
 #cmModal h3 { margin: 22px 0 6px; font-size: 18px; color: var(--indigo-900); }
+
+/* ---------- Страница курса (короткая) ---------- */
+.crs-page2 { display: grid; gap: 20px; }
+.crs-card--page:hover { transform: none; box-shadow: var(--shadow-card); }
+.crs-card--page h1 { font-size: clamp(28px, 3.4vw, 40px); font-weight: 800; line-height: 1.1; letter-spacing: -.01em; }
+.crs-card--page .crs-card__media { align-self: center; }
+.crs-card--page .crs-cover { min-height: 0; height: auto; aspect-ratio: 16 / 9; }
+.crs-card--page .crs-cover img { object-position: center; }
+.crs-buybox { display: grid; gap: 10px; margin-top: auto; padding-top: 20px; border-top: 1px solid var(--indigo-100); }
+.crs-buybox__row { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.crs-buybox .crs-price b { font-size: 30px; }
+.crs-buybox__small { font-size: 14px; color: var(--ink-soft); }
+.crs-buybox__small a { color: var(--indigo-700); text-decoration: underline; text-underline-offset: 3px; }
+.crs-info { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.crs-info__card { padding: 22px 24px; border-radius: 24px; background: #fff; box-shadow: var(--shadow-card); }
+.crs-info__card h2 { font-size: 20px; font-weight: 800; color: var(--indigo-900); }
+.crs-info__card .crs-text { margin-top: 10px; font-size: 15.5px; }
+.crs-note--block { margin-top: 0; }
+.crs-note--block b { display: block; margin-bottom: 4px; }
+.crs-note--block .crs-text { color: inherit; }
+.crs-note--block .crs-text li::before { background: #b07800; }
+.crs-note--block p { margin-top: 6px; }
+@media (max-width: 920px) { .crs-info { grid-template-columns: 1fr; gap: 12px; } }
+@media (max-width: 860px) {
+  .crs-card--page .crs-cover { min-height: 0; }
+  .crs-buybox { padding-top: 14px; border-top: 0; }
+  .crs-buybox__row { flex-direction: column; align-items: stretch; text-align: center; }
+  .crs-buybox__row .crs-price { justify-content: center; }
+  .crs-buybox__small { text-align: center; }
+  .crs-info__card { padding: 18px 20px; }
+}

@@ -12,10 +12,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/assets/css/cab-base.css?v=20261113b" />
-  <link rel="stylesheet" href="/assets/css/account.css?v=20261113b" />
-  <link rel="stylesheet" href="/assets/css/courses.css?v=20261113b" />
-  <link rel="stylesheet" href="/assets/css/cab-theme.css?v=20261113b" />
+  <link rel="stylesheet" href="/assets/css/cab-base.css?v=20261113c" />
+  <link rel="stylesheet" href="/assets/css/account.css?v=20261113c" />
+  <link rel="stylesheet" href="/assets/css/courses.css?v=20261113c" />
+  <link rel="stylesheet" href="/assets/css/cab-theme.css?v=20261113c" />
 </head>
 <body class="cab-page crs-page" data-page="course">
   <a class="skip-link" href="#main">Перейти к содержимому</a>
@@ -26,11 +26,12 @@
         <img class="logo__mark" src="/assets/logo-ga.svg" alt="" width="44" height="44" />
         <span class="logo__text">Кабинет здоровья<small>Онлайн-курсы</small></span>
       </a>
-      <nav class="cab-header__nav" aria-label="Разделы">
+      <nav class="cab-header__nav" id="crsNav" aria-label="Разделы">
         <a class="cab-header__link" href="/">Клиника</a>
         <a class="cab-header__link" href="/kursy/">Курсы</a>
         <a class="cab-header__link" href="/kabinet/#courses">Мои курсы</a>
       </nav>
+      <button class="crs-burger" type="button" aria-label="Меню" aria-expanded="false" aria-controls="crsNav" data-crs-burger><span></span><span></span><span></span></button>
     </div>
   </header>
 
@@ -38,9 +39,8 @@
     <div class="container">
       <nav class="crs-crumbs" aria-label="Навигация"><a href="/kursy/">Курсы</a><span aria-hidden="true">/</span><span data-crumb>…</span></nav>
 
-      <div class="crs-detail" data-state="loading">
-        <div class="crs-detail__main"><div class="crs-skel" style="height:300px"></div><div class="crs-skel" style="height:200px"></div></div>
-        <div class="crs-skel" style="height:320px"></div>
+      <div class="crs-page2" data-state="loading">
+        <div class="crs-skel" style="height:440px"></div><div class="crs-skel" style="height:220px"></div>
       </div>
 
       <section class="cab-state cab-guest" data-state="error" hidden>
@@ -49,10 +49,7 @@
         <div class="cab-guest__actions"><a class="btn btn--primary" href="/kursy/">Все курсы</a></div>
       </section>
 
-      <div class="crs-detail" data-state="ready" hidden>
-        <div class="crs-detail__main" data-main></div>
-        <aside class="crs-buy" data-buy aria-label="Покупка курса"></aside>
-      </div>
+      <div class="crs-page2" data-state="ready" hidden data-main></div>
     </div>
   </main>
   <div class="crs-mbar is-hidden" data-mbar></div>

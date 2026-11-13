@@ -47,7 +47,7 @@
   function meta(stats) {
     stats = stats || {};
     return '<div class="crs-meta"><span>' + ICO.play + plural(stats.lessons || 0, "видеоурок", "видеоурока", "видеоуроков") + "</span>" +
-      (stats.duration_sec ? "<span>" + ICO.time + dur(stats.duration_sec) + "</span>" : "") + "</div>";
+      "</div>";
   }
   function priceHtml(price, old) {
     return '<div class="crs-price"><b>' + money(price) + "</b>" + (old && old > price ? "<s>" + money(old) + "</s>" : "") + "</div>";
@@ -216,7 +216,9 @@
     var href = "/kursy/" + encodeURIComponent(c.slug) + "/";
     var act = c.owned
       ? '<a class="btn btn--primary crs-card__btn" href="' + href + 'uroki/">Перейти к обучению</a>'
-      : '<a class="btn btn--primary crs-card__btn" href="' + href + '">Подробнее</a>';
+      : c.price != null
+        ? '<button class="btn btn--primary crs-card__btn" type="button" data-buy-id="' + esc(c.id) + '" data-title="' + esc(c.title) + '">Купить курс</button>'
+        : '<a class="btn btn--primary crs-card__btn" href="' + href + '">Подробнее</a>';
     var n = (c.stats && c.stats.lessons) || 0;
     var mods = (c.modules || []).filter(Boolean);
     return '<article class="crs-card" data-cat="' + esc(c.category && c.category.slug) + '">' +
@@ -227,7 +229,7 @@
         '<h3><a href="' + href + '">' + esc(c.title) + "</a></h3>" +
         (c.short ? '<p class="crs-card__short">' + esc(c.short) + "</p>" : "") +
         '<p class="crs-card__count">' + ICO.play + plural(n, "видеоролик", "видеоролика", "видеороликов") +
-          (c.stats && c.stats.duration_sec ? " · " + dur(c.stats.duration_sec) : "") + "</p>" +
+          "</p>" +
         (mods.length ? '<ul class="crs-tags" aria-label="Модули курса">' + mods.map(function (m) { return "<li>" + esc(modTag(m)) + "</li>"; }).join("") + "</ul>" : "") +
         '<div class="crs-card__foot">' + (c.owned ? '<span class="crs-card__note">Курс уже в вашем кабинете</span>' : priceHtml(c.price, c.old_price)) + act + "</div>" +
       "</div></article>";
@@ -286,6 +288,8 @@
   }
 
   doc.addEventListener("click", function (e) {
+    var bc = e.target.closest("[data-buy-id]");
+    if (bc) { e.preventDefault(); openBuy({ type: "course", id: bc.getAttribute("data-buy-id"), title: bc.getAttribute("data-title"), gift: false }); return; }
     var b = e.target.closest("[data-buy-bundle],[data-gift-bundle]");
     if (b) openBuy({ type: "bundle", id: b.getAttribute("data-buy-bundle") || b.getAttribute("data-gift-bundle"),
       title: b.getAttribute("data-title"), gift: b.hasAttribute("data-gift-bundle") });
@@ -301,9 +305,9 @@
     return m ? m[1] : (new URLSearchParams(location.search).get("c") || "");
   }
 
-  function section(title, text, extra) {
+  function infoCard(title, text) {
     if (!String(text || "").trim()) return "";
-    return '<section class="cab-block ' + (extra || "") + '"><h2>' + title + '</h2><div class="crs-text">' + richText(text) + "</div></section>";
+    return '<section class="crs-info__card"><h2>' + title + '</h2><div class="crs-text">' + richText(text) + "</div></section>";
   }
 
   function coursePage() {
@@ -314,69 +318,58 @@
       var md = doc.querySelector('meta[name="description"]');
       if (md && c.short) md.setAttribute("content", c.short);
       $("[data-crumb]").textContent = c.title;
-      var main = $("[data-main]");
-      function lessonLi(l) {
-        return '<li class="crs-lesson' + (l.completed ? " is-done" : "") + '"><div><b>' + esc(l.title) +
-          (l.is_free ? '<span class="crs-tag">бесплатно</span>' : "") + "</b>" + (l.description ? "<small>" + esc(l.description) + "</small>" : "") +
-          '</div><span class="crs-lesson__time">' + (l.duration_sec ? clock(l.duration_sec) : "") + "</span></li>";
-      }
-      // уроки с полем «модуль» группируем: Модуль 1. Плечи, Модуль 2. Локти…
-      var groups = modules(c.lessons);
-      var lessons = groups.length > 1 || (groups[0] && groups[0].name)
-        ? groups.map(function (g, i) {
-            return '<li class="crs-module"><h3 class="crs-module__title"><span>Модуль ' + (i + 1) + "</span>" + esc(g.name || "Другие уроки") +
-              '<small>' + plural(g.items.length, "урок", "урока", "уроков") + "</small></h3>" +
-              '<ol class="crs-lessons">' + g.items.map(lessonLi).join("") + "</ol></li>";
-          }).join("")
-        : c.lessons.map(lessonLi).join("");
-      var listTag = groups.length > 1 || (groups[0] && groups[0].name) ? "crs-modules" : "crs-lessons";
-      main.innerHTML =
-        '<section class="crs-head">' + cover(c) + "<div>" +
-          (c.direction ? '<p class="crs-card__dir">' + esc(c.direction) + "</p>" : "") +
-          "<h1>" + esc(c.title) + '</h1><p class="crs-head__short">' + esc(c.short) + "</p>" + meta(c.stats) + "</div></section>" +
-        section("Для кого этот курс", c.for_whom) +
-        section("Какие задачи помогает решать", c.tasks) +
-        '<section class="cab-block"><h2>Программа</h2><div class="crs-text">' + richText(c.program) + "</div>" +
-          (lessons ? '<ol class="' + listTag + '">' + lessons + "</ol>" : '<p class="cab-empty">Уроки скоро появятся.</p>') + "</section>" +
-        section("Чего можно ожидать", c.results) +
-        section("Как заниматься", c.recommendations) +
-        section("Об авторе", c.author) +
-        (c.contraindications ? '<section class="cab-block crs-block--warn"><h2>' + ICO.warn + 'Противопоказания и меры предосторожности</h2><div class="crs-text">' +
-          richText(c.contraindications) + "</div></section>" : "") +
-        section("Условия доступа", c.access_terms);
 
-      var side = $("[data-buy]");
-      var bundles = (c.bundles || []).map(function (b) {
-        return '<li>' + ICO.check + '<span>Входит в комплект <a href="/kursy/#komplekty">«' + esc(b.title) + "»</a> — " + money(b.price) + "</span></li>";
-      }).join("");
+      var mods = modules(c.lessons).map(function (g) { return g.name; }).filter(Boolean);
       var free = c.lessons.some(function (l) { return l.is_free; });
+      var facts = (mods.length ? '<p class="crs-card__count">' + ICO.play + plural(mods.length, "модуль", "модуля", "модулей") + "</p>" +
+        '<ul class="crs-tags" aria-label="Модули курса">' + mods.map(function (m) { return "<li>" + esc(modTag(m)) + "</li>"; }).join("") + "</ul>" : "");
+
+      var buyBox;
       if (c.owned) {
         var p = c.progress || {};
-        side.innerHTML = '<p class="crs-buy__owned">Курс в вашем кабинете</p>' +
-          '<div class="ply-total"><div class="crs-progress"><i style="width:' + (p.percent || 0) + '%"></i></div>' + (p.percent || 0) + "%</div>" +
-          '<p class="cab-muted cab-small">Пройдено ' + (p.completed || 0) + " из " + plural(p.total || 0, "урока", "уроков", "уроков") + "</p>" +
-          '<a class="btn btn--primary btn--lg" href="' + learn + '">' + (p.completed ? "Продолжить обучение" : "Начать обучение") + "</a>" +
-          "";
+        buyBox = '<div class="crs-buybox">' +
+          '<div class="crs-buybox__row"><span class="crs-card__note">Курс уже в вашем кабинете · пройдено ' + (p.percent || 0) + "%</span>" +
+          '<a class="btn btn--primary crs-card__btn" href="' + learn + '">' + (p.completed ? "Продолжить обучение" : "Перейти к обучению") + "</a></div></div>";
       } else if (!c.on_sale) {
-        side.innerHTML = '<p class="buy-note buy-note--warn">Курс сейчас не продаётся.</p>';
+        buyBox = '<p class="buy-note buy-note--warn">Курс сейчас не продаётся.</p>';
       } else {
-        side.innerHTML = priceHtml(c.price, c.old_price) +
-          '<ul class="crs-buy__list"><li>' + ICO.check + "<span>" + plural(c.stats.lessons || 0, "видеоурок", "видеоурока", "видеоуроков") +
-            (c.stats.duration_sec ? ", всего " + dur(c.stats.duration_sec) : "") + "</span></li>" +
-          "<li>" + ICO.check + "<span>" + (c.access_days ? "Доступ на " + plural(c.access_days, "день", "дня", "дней") : "Доступ без ограничения срока") + "</span></li>" +
-          "<li>" + ICO.check + "<span>Смотреть с телефона или компьютера, прогресс сохраняется</span></li>" + bundles + "</ul>" +
-          '<button class="btn btn--accent btn--lg" type="button" data-buy-course>Купить курс</button>' +
-          (free ? '<a class="btn btn--outline" href="' + learn + '">Смотреть бесплатный урок</a>' : "") +
-          
-          '<div class="crs-buy__links"><a href="/kursy/usloviya/">Условия покупки и возврата</a></div>';
+        buyBox = '<div class="crs-buybox">' +
+          '<div class="crs-buybox__row">' + priceHtml(c.price, c.old_price) +
+            '<button class="btn btn--primary crs-card__btn" type="button" data-buy-course>Купить курс</button></div>' +
+          '<p class="crs-buybox__small">' + (c.access_days ? "Доступ на " + plural(c.access_days, "день", "дня", "дней") : "Доступ навсегда") +
+            " · телефон или компьютер · " + '<a href="/kursy/usloviya/">условия покупки</a>' +
+            (free ? ' · <a href="' + learn + '">бесплатный урок</a>' : "") + "</p></div>";
       }
+
+      var warn = c.contraindications || c.results;
+      $("[data-main]").innerHTML =
+        '<section class="crs-card crs-card--page">' +
+          '<div class="crs-card__media">' + cover(c) + (c.owned ? '<span class="crs-badge crs-badge--owned">Куплено</span>' : "") + "</div>" +
+          '<div class="crs-card__body">' +
+            (c.direction ? '<p class="crs-card__dir">' + esc(c.direction) + "</p>" : "") +
+            "<h1>" + esc(c.title) + "</h1>" +
+            (c.short ? '<p class="crs-card__short">' + esc(c.short) + "</p>" : "") + facts + buyBox +
+          "</div></section>" +
+        '<div class="crs-info">' +
+          infoCard("Для кого", c.for_whom) +
+          infoCard("Чем поможет", c.tasks) +
+          infoCard("Как заниматься", c.recommendations) +
+        "</div>" +
+        (warn ? '<section class="crs-note crs-note--block">' + ICO.warn + "<div><b>Противопоказания</b>" +
+          (c.contraindications ? '<div class="crs-text">' + richText(c.contraindications) + "</div>" : "") +
+          (c.results ? "<p>" + esc(c.results) + " Курс не заменяет консультацию врача.</p>" : "") + "</div></section>" : "");
+
       var bar = $("[data-mbar]");
       if (!c.owned && c.on_sale) {
-        bar.innerHTML = priceHtml(c.price, c.old_price) + '<button class="btn btn--accent" type="button" data-buy-course>Купить</button>';
-        bar.classList.remove("is-hidden");
+        bar.innerHTML = priceHtml(c.price, c.old_price) + '<button class="btn btn--primary" type="button" data-buy-course>Купить курс</button>';
       } else if (c.owned) {
         bar.innerHTML = '<span class="crs-meta">Курс у вас</span><a class="btn btn--primary" href="' + learn + '">К урокам</a>';
-        bar.classList.remove("is-hidden");
+      }
+      // нижняя панель — только когда кнопка в карточке ушла за экран
+      var box = $(".crs-buybox");
+      if (bar.innerHTML && box && "IntersectionObserver" in window) {
+        new IntersectionObserver(function (en) { bar.classList.toggle("is-hidden", en[0].isIntersecting || en[0].boundingClientRect.top > 0); })
+          .observe(box);
       }
       doc.addEventListener("click", function (e) {
         if (e.target.closest("[data-buy-course]")) openBuy({ type: "course", id: c.id, title: c.title, gift: false });
