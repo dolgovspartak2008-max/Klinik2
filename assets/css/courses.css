@@ -37,8 +37,8 @@
   .crs-hero__lead { margin-top: 10px; max-width: 76%; font-size: 15px; line-height: 1.45; }
   .crs-hero__facts { flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 16px; max-width: 84%; }
   .crs-hero__facts span { max-width: 100%; padding: 8px 14px; font-size: 13.5px; line-height: 1.25; }
-  .crs-hero__deco--wide { display: none; }
-  .crs-hero__deco--narrow { display: block; width: 30%; }
+  .crs-hero__deco--wide { display: none !important; }
+  .crs-hero__deco--narrow { display: block !important; width: 30%; }
 }
 
 /* ---------- Шапка: бургер на телефоне ---------- */
