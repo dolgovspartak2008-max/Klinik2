@@ -71,6 +71,7 @@ test("схема: курс «Здоровые суставы и спина» и 
 test("каталог и курс доступны без входа", async () => {
   const catalog = await dispatch("courses_catalog", {}, null);
   assert.equal(catalog.courses.length, 1);
+  assert.ok(Array.isArray(catalog.courses[0].modules), "у карточки в каталоге есть список модулей");
   const detail = await dispatch("course_detail", { p_slug: "zdorovye-sustavy-i-spina" }, null);
   assert.equal(detail.lessons.length, 1);
   assert.equal(detail.lessons[0].video_path, undefined);

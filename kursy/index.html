@@ -33,17 +33,34 @@
         <img class="logo__mark" src="/assets/logo-ga.svg" alt="" width="44" height="44" />
         <span class="logo__text">Кабинет здоровья<small>Онлайн-курсы</small></span>
       </a>
-      <nav class="cab-header__nav" aria-label="Разделы">
+      <nav class="cab-header__nav" id="crsNav" aria-label="Разделы">
         <a class="cab-header__link" href="/">Клиника</a>
         <a class="cab-header__link" href="/kursy/" aria-current="page">Курсы</a>
         <a class="cab-header__link" href="/kabinet/#courses">Мои курсы</a>
       </nav>
+      <button class="crs-burger" type="button" aria-label="Меню" aria-expanded="false" aria-controls="crsNav" data-crs-burger><span></span><span></span><span></span></button>
     </div>
   </header>
 
   <main id="main" class="crs">
     <div class="container">
       <section class="crs-hero" aria-labelledby="crsTitle">
+        <svg class="crs-hero__deco crs-hero__deco--wide" viewBox="0 0 420 380" preserveAspectRatio="xMaxYMid meet" aria-hidden="true">
+          <circle cx="403" cy="167" r="165" class="d-fill" />
+          <circle cx="108" cy="197" r="63" class="d-fill" />
+          <circle cx="180" cy="227" r="58" class="d-soft" />
+          <circle cx="216" cy="52" r="13" class="d-soft" />
+          <circle cx="66" cy="77" r="38" class="d-ring" />
+          <circle cx="273" cy="289" r="21" class="d-ring" />
+        </svg>
+        <svg class="crs-hero__deco crs-hero__deco--narrow" viewBox="0 0 130 480" preserveAspectRatio="xMaxYMid meet" aria-hidden="true">
+          <circle cx="150" cy="150" r="62" class="d-fill" />
+          <circle cx="52" cy="255" r="31" class="d-fill" />
+          <circle cx="92" cy="300" r="28" class="d-soft" />
+          <circle cx="40" cy="175" r="7" class="d-soft" />
+          <circle cx="52" cy="70" r="19" class="d-ring" />
+          <circle cx="30" cy="455" r="13" class="d-ring" />
+        </svg>
         <h1 id="crsTitle">Онлайн-курсы упражнений</h1>
         <p class="crs-hero__lead">Короткие видеозанятия от специалистов Кабинета здоровья доктора Горшечникова для профилактики и поддержания здоровья суставов и спины. Занимайтесь дома в удобное время — прогресс сохраняется на любом устройстве.</p>
         <div class="crs-hero__facts">
@@ -54,9 +71,7 @@
       </section>
 
       <div data-state="loading">
-        <div class="crs-section"><div class="crs-grid">
-          <div class="crs-skel" style="height:420px"></div><div class="crs-skel" style="height:420px"></div><div class="crs-skel" style="height:420px"></div>
-        </div></div>
+        <div class="crs-section"><div class="crs-skel crs-skel--card"></div></div>
       </div>
 
       <section class="cab-state cab-guest" data-state="error" hidden>

@@ -70,6 +70,17 @@
   }
   window.FZC = { modules: modules, esc: esc, money: money, plural: plural, dur: dur, clock: clock, richText: richText, cover: cover, meta: meta, priceHtml: priceHtml, ICO: ICO };
 
+  // меню-«бургер» в шапке на телефоне
+  (function () {
+    var btn = doc.querySelector("[data-crs-burger]");
+    if (!btn) return;
+    var header = btn.closest(".header");
+    function set(open) { btn.setAttribute("aria-expanded", String(open)); header.classList.toggle("crs-menu-open", open); }
+    btn.addEventListener("click", function () { set(btn.getAttribute("aria-expanded") !== "true"); });
+    doc.addEventListener("keydown", function (e) { if (e.key === "Escape") set(false); });
+    doc.addEventListener("click", function (e) { if (!header.contains(e.target)) set(false); });
+  })();
+
   var page = doc.body.getAttribute("data-page");
   if (!SB || !SB.enabled) return;
 
@@ -197,18 +208,28 @@
   }
 
   // ------------------------------------------------------------ каталог
+  // короткие подписи модулей для тегов на карточке
+  var MOD_SHORT = { "тазобедренный": "Таз", "тазобедренные суставы": "Таз", "тазобедренный сустав": "Таз" };
+  function modTag(m) { return MOD_SHORT[String(m).trim().toLowerCase()] || m; }
+
   function card(c) {
     var href = "/kursy/" + encodeURIComponent(c.slug) + "/";
     var act = c.owned
-      ? '<a class="btn btn--primary btn--sm" href="' + href + 'uroki/">Перейти к обучению</a>'
-      : '<a class="btn btn--outline btn--sm" href="' + href + '">Подробнее</a>';
+      ? '<a class="btn btn--primary crs-card__btn" href="' + href + 'uroki/">Перейти к обучению</a>'
+      : '<a class="btn btn--primary crs-card__btn" href="' + href + '">Подробнее</a>';
+    var n = (c.stats && c.stats.lessons) || 0;
+    var mods = (c.modules || []).filter(Boolean);
     return '<article class="crs-card" data-cat="' + esc(c.category && c.category.slug) + '">' +
-      cover(c) + (c.owned ? '<span class="crs-badge crs-badge--owned">Куплено</span>' : c.old_price ? '<span class="crs-badge">Скидка</span>' : "") +
+      '<div class="crs-card__media">' + cover(c) +
+        (c.owned ? '<span class="crs-badge crs-badge--owned">Куплено</span>' : c.old_price ? '<span class="crs-badge">Скидка</span>' : "") + "</div>" +
       '<div class="crs-card__body">' +
         (c.direction ? '<p class="crs-card__dir">' + esc(c.direction) + "</p>" : "") +
         '<h3><a href="' + href + '">' + esc(c.title) + "</a></h3>" +
-        '<p class="crs-card__short">' + esc(c.short) + "</p>" + meta(c.stats) +
-        '<div class="crs-card__foot">' + (c.owned ? '<span class="crs-meta">Курс в вашем кабинете</span>' : priceHtml(c.price, c.old_price)) + act + "</div>" +
+        (c.short ? '<p class="crs-card__short">' + esc(c.short) + "</p>" : "") +
+        '<p class="crs-card__count">' + ICO.play + plural(n, "видеоролик", "видеоролика", "видеороликов") +
+          (c.stats && c.stats.duration_sec ? " · " + dur(c.stats.duration_sec) : "") + "</p>" +
+        (mods.length ? '<ul class="crs-tags" aria-label="Модули курса">' + mods.map(function (m) { return "<li>" + esc(modTag(m)) + "</li>"; }).join("") + "</ul>" : "") +
+        '<div class="crs-card__foot">' + (c.owned ? '<span class="crs-card__note">Курс уже в вашем кабинете</span>' : priceHtml(c.price, c.old_price)) + act + "</div>" +
       "</div></article>";
   }
 
@@ -237,7 +258,7 @@
       if (!d.courses.length) {
         list.innerHTML = '<div class="crs-empty"><b>Курсы скоро появятся</b>Мы готовим видеозанятия. Загляните позже или запишитесь на приём в клинику.</div>';
       } else {
-        list.innerHTML = '<div class="crs-grid">' + d.courses.map(card).join("") + "</div>";
+        list.innerHTML = '<div class="crs-list">' + d.courses.map(card).join("") + "</div>";
       }
       tabs.innerHTML = cats.length > 1 ? '<button class="crs-cat" type="button" role="tab" data-cat-btn="" aria-selected="true">Все курсы</button>' +
         cats.map(function (k) { return '<button class="crs-cat" type="button" role="tab" data-cat-btn="' + esc(k.slug) + '" aria-selected="false">' + esc(k.title) + "</button>"; }).join("") : "";

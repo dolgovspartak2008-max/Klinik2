@@ -76,7 +76,11 @@ async function catalog(sql, user) {
   const rows = await sql.query(
     `select c.*, k.slug as category_slug, k.title as category_title,
        count(l.id) filter (where not l.hidden and l.video_path is not null)::int as lesson_count,
-       coalesce(sum(l.duration_sec) filter (where not l.hidden and l.video_path is not null), 0)::int as duration_sec
+       coalesce(sum(l.duration_sec) filter (where not l.hidden and l.video_path is not null), 0)::int as duration_sec,
+       (select coalesce(json_agg(m.module order by m.first_sort), '[]'::json) from (
+          select ml.module, min(ml.sort) as first_sort from lessons ml
+          where ml.course_id = c.id and not ml.hidden and ml.video_path is not null and ml.module <> ''
+          group by ml.module) m) as modules
      from courses c left join course_categories k on k.id = c.category_id
      left join lessons l on l.course_id = c.id where c.status = 'published'
      group by c.id, k.slug, k.title order by c.sort, c.title`,
@@ -88,7 +92,7 @@ async function catalog(sql, user) {
   const owned = new Set(ownedRows.map((row) => row.course_id));
   return {
     categories: categories.filter((row) => row.courses > 0).map((row) => ({ id: row.id, slug: row.slug, title: row.title, description: row.description })),
-    courses: rows.map((row) => courseCard(row, owned.has(row.id))),
+    courses: rows.map((row) => ({ ...courseCard(row, owned.has(row.id)), modules: Array.isArray(row.modules) ? row.modules : [] })),
     bundles: [],
   };
 }
