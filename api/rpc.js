@@ -15,6 +15,9 @@ function number(value, fallback = 0) {
   return Number.isFinite(result) ? result : fallback;
 }
 
+// обложка по умолчанию, пока в админке не загружена своя
+const DEFAULT_COVERS = { "zdorovye-sustavy-i-spina": "/assets/img/course-sustavy-spina.webp" };
+
 function courseCard(row, owned = false) {
   return {
     id: row.id,
@@ -24,7 +27,7 @@ function courseCard(row, owned = false) {
     direction: row.direction,
     price: row.price == null ? null : Number(row.price),
     old_price: row.old_price == null ? null : Number(row.old_price),
-    cover_url: row.cover_url,
+    cover_url: row.cover_url || DEFAULT_COVERS[row.slug] || null,
     status: row.status,
     category: row.category_id ? { id: row.category_id, slug: row.category_slug, title: row.category_title } : null,
     stats: { lessons: Number(row.lesson_count || 0), duration_sec: Number(row.duration_sec || 0) },
