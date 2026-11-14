@@ -405,7 +405,8 @@ html.is-locked { background: var(--navy-900); }
 .mmenu.is-open { clip-path: inset(0 0 0 0); }
 .mmenu__bg { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
 .mmenu__bg .hero__glow--1 { right: -260px; top: -200px; }
-.mmenu__watermark { position: absolute; right: -60px; bottom: 6%; width: 320px; opacity: .06; }
+/* Логотип-водяной знак — по центру экрана меню и целиком в кадре */
+.mmenu__watermark { position: absolute; left: 50%; top: 50%; width: min(320px, 80vw); height: auto; transform: translate(-50%, -50%); opacity: .06; }
 .mmenu__watermark path { stroke: var(--gold); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .mmenu__top, .mmenu__body { position: relative; width: calc(100% - 32px); max-width: 560px; margin-inline: auto; }
 .mmenu__top { display: flex; align-items: center; justify-content: space-between; min-height: 72px; border-bottom: 1px solid rgba(255,255,255,.08); }

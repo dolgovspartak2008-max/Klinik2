@@ -129,14 +129,26 @@
     buyStatus("");
     $("[data-buy-lines]", buy).innerHTML = '<div class="crs-skel" style="height:64px"></div>';
     buyView("form");
-    buy.hidden = false; doc.body.classList.add("has-modal");
+    buy.hidden = false; buy.scrollTop = 0; doc.body.classList.add("has-modal");
+    // окно покупки — отдельный экран: сайт под ним скрыт и не просвечивает
+    doc.documentElement.classList.add("buy-open");
+    // жест/кнопка «назад» закрывает окно, а не уводит со страницы
+    if (!buyHist) { try { history.pushState({ buyModal: true }, ""); buyHist = true; } catch (e) { buyHist = false; } }
     loadQuote(null).catch(function (e) {
       buyStatus(e.message, false);
       if (e.code === "already_owned") buyStatus("Этот курс уже есть в вашем кабинете.", true);
     });
     setTimeout(function () { var x = $("[data-buy-close]", buy); if (x) x.focus(); }, 50);
   }
-  function closeBuy() { if (!buy) return; buy.hidden = true; doc.body.classList.remove("has-modal"); }
+  var buyHist = false;
+  function closeBuy(fromHistory) {
+    if (!buy || buy.hidden) return;
+    buy.hidden = true; doc.body.classList.remove("has-modal");
+    doc.documentElement.classList.remove("buy-open");
+    if (buyHist && fromHistory !== true) { buyHist = false; history.back(); }
+    buyHist = false;
+  }
+  window.addEventListener("popstate", function () { if (buy && !buy.hidden) closeBuy(true); else buyHist = false; });
   window.FZBuy = openBuy;
 
   if (buy) {

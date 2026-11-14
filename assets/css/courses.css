@@ -580,3 +580,19 @@
   .congrats__confetti { display: none; }
   .congrats__medal { animation: none; }
 }
+
+/* ================= Окно покупки — отдельный экран =================
+   Раньше окно лежало поверх страницы и его можно было «тянуть» пальцем,
+   а сайт просвечивал сверху и снизу. Теперь это отдельная белая страница:
+   пока она открыта, сайт под ней скрыт, фон страницы белый. */
+html.buy-open, html.buy-open body { background: #fff; overflow: hidden; overscroll-behavior: none; }
+html.buy-open .header, html.buy-open main, html.buy-open .footer, html.buy-open .crs-mbar, html.buy-open .skip-link { visibility: hidden; }
+#buyModal { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; padding: calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 24px); background: #fff; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+#buyModal[hidden] { display: none; }
+#buyModal .modal__backdrop { display: none; }
+#buyModal .modal__card { margin: auto; width: min(520px, 100%); max-height: none; overflow: visible; box-shadow: none; animation: fade .3s ease both; }
+@media (max-width: 640px) {
+  #buyModal { padding-top: calc(env(safe-area-inset-top) + 8px); }
+  #buyModal .modal__card { margin: 0 auto auto; padding-left: 4px; padding-right: 4px; }
+  #buyModal .modal__close { right: 0; top: 10px; }
+}

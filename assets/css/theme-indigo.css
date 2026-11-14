@@ -178,7 +178,7 @@ body.is-ready .hero__actions { transition-delay: .5s; }
 html.is-locked { background: var(--navy-900); }
 .mmenu__doctor { border-color: rgba(169,165,255,.25); }
 .mmenu__doctor img { border-color: var(--gold-2); }
-.mmenu__watermark { width: 360px; opacity: .07; }
+.mmenu__watermark { width: min(360px, 84vw); opacity: .07; }
 .mmenu__watermark path { fill: var(--gold-2); stroke: none; }
 .mmenu .btn--gold { background: #fff; color: var(--gold-3); }
 
