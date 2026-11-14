@@ -81,6 +81,13 @@ create table if not exists course_orders (
   unique (user_id, idempotency_key)
 );
 
+-- онлайн-оплата через ЮKassa: текущий платёж по заказу
+alter table course_orders add column if not exists payment_id text;
+alter table course_orders add column if not exists payment_status text;
+alter table course_orders add column if not exists payment_url text;
+alter table course_orders add column if not exists payment_attempt integer not null default 0;
+create unique index if not exists orders_payment_id_idx on course_orders(payment_id) where payment_id is not null;
+
 create table if not exists course_access (
   id uuid primary key default gen_random_uuid(),
   user_id text not null references profiles(id) on delete cascade,

@@ -107,7 +107,9 @@
     var note = $("[data-buy-note]", buy);
     note.hidden = !q.note;
     note.textContent = q.note || "";
-    $("[data-buy-submit]", buy).textContent = Number(q.total) === 0 ? "Получить доступ" : "Оформить заказ";
+    $("[data-buy-submit]", buy).textContent = Number(q.total) === 0 ? "Получить доступ" : q.online_payment ? "Перейти к оплате" : "Оформить заказ";
+    var pn = $("[data-buy-paynote]", buy);
+    if (pn) pn.hidden = !(q.online_payment && Number(q.total) > 0);
   }
 
   function loadQuote(promo) {
@@ -162,13 +164,32 @@
       var k = form.dataset.key || (form.dataset.key = key());
       SB.rpc("course_order_create", { p_item_type: buyCtx.type, p_item_id: buyCtx.id, p_promo: quote.promo_code || null,
         p_gift: buyCtx.gift, p_key: k })
-        .then(function (r) { delete form.dataset.key; showDone(r.order); })
+        .then(function (r) {
+          delete form.dataset.key;
+          if (r.order.status !== "pending" || !r.online_payment) { showDone(r.order); return; }
+          // онлайн-оплата: уходим на страницу ЮKassa, доступ откроется после подтверждения платежа
+          buyStatus("Переходим на страницу оплаты…", true);
+          return pay(r.order.id).catch(function (err) { showDone(r.order, err.message); });
+        })
         .catch(function (err) { buyStatus(err.message, false); delete form.dataset.key; })
         .then(function () { btn.disabled = false; btn.classList.remove("is-busy"); });
     });
   }
 
-  function showDone(o) {
+  // Оплата заказа через ЮKassa: сервер создаёт платёж и возвращает ссылку на страницу оплаты.
+  // Нужна и окну покупки, и кабинету (кнопка «Оплатить» у ожидающего заказа).
+  function pay(orderId) {
+    return SB.rpc("course_payment_start", { p_order: orderId }).then(function (r) {
+      if (r.paid) { location.href = "/kabinet/?order=" + encodeURIComponent(orderId) + "#courses"; return r; }
+      if (r.waiting) { toast("Платёж обрабатывается банком. Доступ откроется автоматически."); return r; }
+      if (!r.url || !/^https:\/\//i.test(r.url)) throw new Error("Не удалось открыть страницу оплаты.");
+      location.href = r.url;
+      return r;
+    });
+  }
+  window.FZPay = pay;
+
+  function showDone(o, payError) {
     buyView("done");
     var C = window.SITE_CONTACTS || {};
     var paid = o.status === "paid";
@@ -176,7 +197,9 @@
     $("[data-done-no]", buy).textContent = "Заказ № " + o.order_no + " · " + money(o.total);
     var text = paid
       ? (o.is_gift ? "Подарочный код — в разделе «Мои курсы» в личном кабинете. Передайте его получателю." : "Курс уже в разделе «Мои курсы». Можно начинать заниматься.")
-      : "Онлайн-оплата на сайте скоро появится. Сейчас администратор клиники свяжется с вами и подскажет, как оплатить. Чтобы ускорить, напишите нам — номер заказа уже в сообщении. Доступ откроется автоматически, как только оплата будет подтверждена.";
+      : payError
+        ? payError + " Заказ сохранён — оплатить его можно позже в личном кабинете («Мои заказы») или написать нам, номер заказа уже в сообщении."
+        : "Администратор клиники свяжется с вами и подскажет, как оплатить. Чтобы ускорить, напишите нам — номер заказа уже в сообщении. Доступ откроется автоматически, как только оплата будет подтверждена.";
     $("[data-done-text]", buy).textContent = text;
     var msg = "Здравствуйте! Хочу оплатить заказ № " + o.order_no + " — «" + o.title + "» на сайте, " + money(o.total) + ".";
     var act = $("[data-done-actions]", buy);
