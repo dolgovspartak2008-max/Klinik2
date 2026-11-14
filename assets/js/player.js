@@ -176,9 +176,12 @@
     return SB.rpc("course_progress_save", { p_lesson: lesson.id, p_position: Math.round(pos * 10) / 10,
       p_duration: isFinite(video.duration) ? Math.round(video.duration) : null, p_completed: !!done })
       .then(function (r) {
+        var was = courseDone();
         lesson.position_sec = pos;
         if (r && r.completed && !lesson.completed) { lesson.completed = true; renderList(); }
         if (r && r.progress) { data.progress = r.progress; renderTotal(); }
+        // последний урок курса отмечен пройденным — поздравляем
+        if (!was && courseDone()) celebrate(false);
       }).catch(function () {});
   }
 
@@ -216,9 +219,15 @@
         showVeil("<b>Урок пройден ✓</b><p>Следующий: «" + esc(next.title) + "»</p>",
           [{ text: "Следующий урок", onClick: function () { select(next.id, true); } },
            { text: "Посмотреть ещё раз", cls: "btn--glass", onClick: function () { hideVeil(); video.currentTime = 0; video.play(); } }]);
+      } else if (courseDone()) {
+        showVeil("<b>Курс пройден 🎉</b><p>Вы посмотрели все уроки. Повторяйте комплексы регулярно — так от них больше пользы.</p>",
+          [{ text: "Поздравление", onClick: function () { celebrate(true); } },
+           { text: "Посмотреть ещё раз", cls: "btn--glass", onClick: function () { hideVeil(); video.currentTime = 0; video.play(); } }]);
       } else {
-        showVeil("<b>Курс пройден ✓</b><p>Вы посмотрели все уроки. Повторяйте комплексы регулярно — так от них больше пользы.</p>",
-          [{ text: "Посмотреть ещё раз", onClick: function () { hideVeil(); video.currentTime = 0; video.play(); } }]);
+        var left = firstUnfinished();
+        showVeil("<b>Урок пройден ✓</b><p>Чтобы завершить курс, осталось " + C.plural(remaining(), "урок", "урока", "уроков") + ".</p>",
+          (left ? [{ text: "К непройденному уроку", onClick: function () { select(left.id, true); } }] : []).concat(
+          [{ text: "Посмотреть ещё раз", cls: "btn--glass", onClick: function () { hideVeil(); video.currentTime = 0; video.play(); } }]));
       }
     });
   });
@@ -349,10 +358,82 @@
   function renderTotal() {
     var p = data.progress || {};
     var total = p.total || data.lessons.length, done = p.completed || 0;
-    $("[data-total]").innerHTML = data.access
-      ? '<span class="lrn-head__count">Пройдено <b>' + done + "</b> из " + C.plural(total, "урока", "уроков", "уроков") + "</span>" +
+    var box = $("[data-total]");
+    box.innerHTML = data.access
+      ? (courseDone()
+        ? '<button class="lrn-finished" type="button" data-show-congrats>🎉 Курс пройден</button>'
+        : '<span class="lrn-head__count">Пройдено <b>' + done + "</b> из " + C.plural(total, "урока", "уроков", "уроков") + "</span>") +
         '<div class="crs-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + (p.percent || 0) + '"><i style="width:' + (p.percent || 0) + '%"></i></div>'
       : "";
+    var again = $("[data-show-congrats]", box);
+    if (again) again.addEventListener("click", function () { celebrate(true); });
+  }
+
+  // ------------------------------------------------------------ курс пройден: поздравление
+  // Курс считается пройденным, когда сервер отметил пройденными все опубликованные уроки.
+  function courseDone() {
+    var p = data && data.progress;
+    return !!(data && data.access && p && p.total > 0 && p.completed >= p.total);
+  }
+  function remaining() { var p = data.progress || {}; return Math.max(0, (p.total || 0) - (p.completed || 0)); }
+  function firstUnfinished() { return data.lessons.filter(function (l) { return l.can_watch && !l.completed; })[0] || null; }
+  function seenKey() { return "fz.congrats." + (data.course.id || slug); }
+
+  var congrats = null;
+  function closeCongrats() {
+    if (!congrats) return;
+    congrats.hidden = true;
+    doc.body.classList.remove("has-modal");
+  }
+  // force — показать снова по кнопке; без него — только первый раз на этом устройстве
+  function celebrate(force) {
+    if (!courseDone()) return;
+    if (!force) {
+      try { if (localStorage.getItem(seenKey())) return; localStorage.setItem(seenKey(), String(Date.now())); } catch (e) {}
+    }
+    if (!video.paused) video.pause();
+    var c = data.course, n = (data.progress && data.progress.total) || data.lessons.length;
+    var name = String(data.student_name || "").trim().split(/\s+/)[0];
+    var wa = window.SITE_CONTACTS && window.SITE_CONTACTS.whatsapp;
+    var waHref = wa ? wa + (wa.indexOf("?") >= 0 ? "&" : "?") + "text=" + encodeURIComponent(
+      "Здравствуйте! Я прошёл(-ла) онлайн-курс «" + c.title + "» и хочу записаться на консультацию.") : "";
+    if (!congrats) {
+      congrats = doc.createElement("div");
+      congrats.className = "modal congrats";
+      congrats.setAttribute("role", "dialog");
+      congrats.setAttribute("aria-modal", "true");
+      congrats.setAttribute("aria-labelledby", "congratsTitle");
+      doc.body.appendChild(congrats);
+      congrats.addEventListener("click", function (e) {
+        if (e.target.closest("[data-congrats-close]")) closeCongrats();
+        if (e.target.closest("[data-congrats-again]")) { closeCongrats(); var first = data.lessons.filter(function (l) { return l.can_watch; })[0]; if (first) select(first.id, false); }
+      });
+      doc.addEventListener("keydown", function (e) { if (e.key === "Escape" && congrats && !congrats.hidden) closeCongrats(); });
+    }
+    var bits = "";
+    for (var i = 0; i < 28; i++) bits += '<i style="--x:' + Math.round(Math.random() * 100) + "%;--d:" + (Math.random() * 0.9).toFixed(2) + "s;--r:" + Math.round(Math.random() * 360) + 'deg"></i>';
+    congrats.innerHTML =
+      '<div class="modal__backdrop" data-congrats-close></div>' +
+      '<div class="modal__card congrats__card">' +
+        '<div class="congrats__confetti" aria-hidden="true">' + bits + "</div>" +
+        '<button class="modal__close" type="button" data-congrats-close aria-label="Закрыть">×</button>' +
+        '<div class="congrats__medal" aria-hidden="true">🏆</div>' +
+        '<p class="congrats__eyebrow">Курс пройден</p>' +
+        '<h2 id="congratsTitle">Поздравляем' + (name ? ", " + esc(name) : "") + "!</h2>" +
+        "<p>Вы посмотрели все " + C.plural(n, "урок", "урока", "уроков") + " курса <b>«" + esc(c.title) + "»</b>. Это настоящий вклад в здоровье ваших суставов и спины — спасибо, что занимались с нами!</p>" +
+        '<ul class="congrats__tips">' +
+          "<li>Повторяйте комплексы регулярно — польза от упражнений копится со временем.</li>" +
+          "<li>Уроки остаются в вашем кабинете навсегда — возвращайтесь к ним в любой момент.</li>" +
+          "<li>Если что-то беспокоит, доктор посмотрит вас лично на консультации.</li>" +
+        "</ul>" +
+        '<div class="congrats__actions">' +
+          (waHref ? '<a class="btn btn--accent" href="' + esc(waHref) + '" target="_blank" rel="noopener">Записаться на консультацию</a>' : "") +
+          '<button class="btn btn--outline" type="button" data-congrats-again>Пересмотреть уроки</button>' +
+        "</div>" +
+      "</div>";
+    congrats.hidden = false;
+    doc.body.classList.add("has-modal");
+    setTimeout(function () { var x = $(".modal__close", congrats); if (x) x.focus(); }, 50);
   }
 
   // уроки, сгруппированные по модулям (порядок — как в курсе)
@@ -483,6 +564,7 @@
         d.lessons.filter(function (l) { return l.can_watch && !l.completed; })[0] ||
         d.lessons.filter(function (l) { return l.can_watch; })[0] || d.lessons[0];
       select(pick.id, false);
+      if (courseDone()) celebrate(false);
       if (!d.access && !d.lessons.some(function (l) { return l.can_watch; })) $("[data-buy-hint]").hidden = false;
     }).catch(function (e) {
       if (e.code === "not_authenticated") { state("guest"); return; }

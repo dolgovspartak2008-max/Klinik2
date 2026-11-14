@@ -1,8 +1,20 @@
 import { authUser } from "./_lib/auth.js";
 import { db, ensureProfile, requireAdmin } from "./_lib/db.js";
 import { fail, json, method, uuid } from "./_lib/http.js";
+import { checkPayment, markOrderPaid, startPayment } from "./_lib/payments.js";
+import { yookassaEnabled } from "./_lib/yookassa.js";
 
 const PUBLIC = new Set(["courses_catalog", "course_detail"]);
+
+// Адрес сайта для возврата со страницы оплаты. SITE_URL можно задать в Vercel;
+// иначе — текущий домен, если это наш домен или Preview на vercel.app.
+function siteOrigin(req) {
+  const env = String(process.env.SITE_URL || "").trim().replace(/\/+$/, "");
+  if (/^https:\/\/[a-z0-9.-]+$/i.test(env)) return env;
+  const host = String(req?.headers?.["x-forwarded-host"] || req?.headers?.host || "").toLowerCase().split(",")[0].trim();
+  if (/^(www\.)?drgorshechnikov\.ru$/.test(host) || /^[a-z0-9-]+\.vercel\.app$/.test(host)) return `https://${host}`;
+  return "https://www.drgorshechnikov.ru";
+}
 
 function httpError(code, status = 400) {
   const error = new Error(code);
@@ -148,7 +160,7 @@ async function quote(sql, args, user) {
   const course = rows[0];
   if (!course) throw httpError("course_unavailable");
   if (await hasAccess(sql, user.id, courseId)) throw httpError("already_owned");
-  return { item_type: "course", item_id: courseId, title: course.title, list_price: Number(course.price), base_price: Number(course.price), discount: 0, total: Number(course.price), promo_code: null, is_gift: false, note: null };
+  return { item_type: "course", item_id: courseId, title: course.title, list_price: Number(course.price), base_price: Number(course.price), discount: 0, total: Number(course.price), promo_code: null, is_gift: false, note: null, online_payment: yookassaEnabled() };
 }
 
 async function createOrder(sql, args, user) {
@@ -164,7 +176,7 @@ async function createOrder(sql, args, user) {
   const status = total === 0 ? "paid" : "pending";
   // уже есть неоплаченный заказ на этот курс — возвращаем его, а не создаём второй
   const pending = await sql.query(`select * from course_orders where user_id=$1 and course_id=$2 and status='pending' limit 1`, [user.id, courseId]);
-  if (pending[0]) return { order: { ...pending[0], total: Number(pending[0].total), title: course.title, course_slug: course.slug, is_gift: false } };
+  if (pending[0]) return { order: publicOrder({ ...pending[0], total: Number(pending[0].total), title: course.title, course_slug: course.slug, is_gift: false }), online_payment: yookassaEnabled() };
   const rows = await sql.query(
     `insert into course_orders (user_id, course_id, total, status, idempotency_key, paid_at)
      values ($1, $2, $3, $4, $5, case when $4 = 'paid' then now() else null end)
@@ -177,7 +189,12 @@ async function createOrder(sql, args, user) {
      on conflict (user_id, course_id) do update set revoked_at = null, granted_at = now()`,
     [user.id, courseId],
   );
-  return { order: { ...rows[0], total, title: course.title, course_slug: course.slug, is_gift: false } };
+  return { order: publicOrder({ ...rows[0], total, title: course.title, course_slug: course.slug, is_gift: false }), online_payment: yookassaEnabled() };
+}
+
+// служебные поля оплаты в браузер не отдаём
+function publicOrder({ payment_id, payment_url, payment_attempt, idempotency_key, ...order }) {
+  return order;
 }
 
 async function myCourses(sql, user) {
@@ -198,7 +215,7 @@ async function myCourses(sql, user) {
     `select o.*, c.title from course_orders o join courses c on c.id = o.course_id where o.user_id = $1 order by o.created_at desc limit 50`,
     [user.id],
   );
-  return { blocked: profile.status !== "active", course_news: profile.course_news, courses, orders: orders.map((row) => ({ ...row, total: Number(row.total), is_gift: false })) };
+  return { blocked: profile.status !== "active", course_news: profile.course_news, online_payment: yookassaEnabled(), courses, orders: orders.map((row) => publicOrder({ ...row, total: Number(row.total), is_gift: false })) };
 }
 
 async function player(sql, args, user) {
@@ -219,6 +236,7 @@ async function player(sql, args, user) {
     access,
     blocked: profile.status !== "active",
     watermark: profile.email,
+    student_name: profile.name || "",
     progress: await courseProgress(sql, user.id, course.id),
     lessons: lessons.map(({ video_path, video_size, ...lesson }) => ({ ...lesson, can_watch: (access || lesson.is_free) && profile.status === "active" })),
   };
@@ -333,7 +351,8 @@ async function adminOrders(sql, args) {
      join profiles p on p.id=o.user_id ${status ? "where o.status=$1" : ""} order by o.created_at desc limit 100`,
     values,
   );
-  return rows.map((row) => ({ ...row, total: Number(row.total), title: row.title, is_gift: false, refunded: row.status === "refunded" ? Number(row.total) : 0, user: { id: row.user_id, name: row.name, email: row.email, phone: row.phone, client_no: String(row.user_id).slice(0, 8) } }));
+  return rows.map(({ payment_url, idempotency_key, ...row }) => ({ ...row, total: Number(row.total), title: row.title, is_gift: false, refunded: row.status === "refunded" ? Number(row.total) : 0,
+    payment: row.paid_at && row.payment_method ? { method: row.payment_method, created_at: row.paid_at } : null, user: { id: row.user_id, name: row.name, email: row.email, phone: row.phone, client_no: String(row.user_id).slice(0, 8) } }));
 }
 
 async function adminMarkPaid(sql, args) {
@@ -341,24 +360,7 @@ async function adminMarkPaid(sql, args) {
   const method = String(args.p_method || "").trim().slice(0, 120);
   if (!method) throw httpError("method_required");
   // переводим в «оплачен» только ожидающий заказ — повторное нажатие ничего не меняет
-  const rows = await sql.query(
-    `update course_orders set status='paid', payment_method=$2, note=$3, paid_at=now()
-     where id=$1 and status='pending' returning *`,
-    [id, method, args.p_note || null],
-  );
-  if (!rows[0]) {
-    const existing = await sql.query(`select status from course_orders where id=$1`, [id]);
-    if (!existing[0]) throw httpError("not_found", 404);
-    if (existing[0].status === "paid") return { ok: true, already: true };
-    throw httpError("order_not_payable");
-  }
-  await sql.query(
-    `insert into course_access (user_id, course_id, source) values ($1, $2, 'purchase')
-     on conflict (user_id, course_id) do update set revoked_at = null,
-       granted_at = case when course_access.revoked_at is null then course_access.granted_at else now() end`,
-    [rows[0].user_id, rows[0].course_id],
-  );
-  return { ok: true, already: false };
+  return markOrderPaid(sql, id, method, args.p_note || null);
 }
 
 async function heartbeat(sql, args, user) {
@@ -379,7 +381,7 @@ async function heartbeat(sql, args, user) {
   return { ok: true };
 }
 
-export async function dispatch(fn, args, user, sql = db()) {
+export async function dispatch(fn, args, user, sql = db(), ctx = {}) {
   if (user) await ensureProfile(user);
   if (fn === "courses_catalog") return catalog(sql, user);
   if (fn === "course_detail") return detail(sql, args, user);
@@ -387,6 +389,12 @@ export async function dispatch(fn, args, user, sql = db()) {
   if (fn === "course_quote") return quote(sql, args, user);
   if (fn === "course_order_create") return createOrder(sql, args, user);
   if (fn === "my_courses") return myCourses(sql, user);
+  if (fn === "course_payment_start") {
+    const profile = await ensureProfile(user);
+    if (profile.status !== "active") throw httpError("courses_blocked", 403);
+    return startPayment(sql, uuid(args.p_order), user, { origin: ctx.origin || siteOrigin(null), email: profile.email });
+  }
+  if (fn === "course_payment_check") return checkPayment(sql, uuid(args.p_order), user);
   if (fn === "my_dashboard") {
     const profile = await ensureProfile(user);
     return { profile: {
@@ -491,7 +499,7 @@ export default async function handler(req, res) {
     const fn = String(req.body?.fn || "");
     const args = req.body?.args || {};
     const user = await authUser(req, PUBLIC.has(fn));
-    json(res, 200, await dispatch(fn, args, user));
+    json(res, 200, await dispatch(fn, args, user, db(), { origin: siteOrigin(req) }));
   } catch (error) {
     fail(res, error);
   }
