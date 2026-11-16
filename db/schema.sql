@@ -120,6 +120,23 @@ create table if not exists playback_sessions (
   end_reason text
 );
 
+-- журнал действий для админки (вход, заказы, оплаты, просмотры, действия админа)
+create table if not exists activity_log (
+  id bigint generated always as identity primary key,
+  created_at timestamptz not null default now(),
+  actor_id text,
+  user_id text,
+  type text not null,
+  course_id uuid,
+  lesson_id uuid,
+  order_id uuid,
+  details jsonb not null default '{}'::jsonb
+);
+alter table profiles add column if not exists last_seen_at timestamptz;
+
+create index if not exists activity_created_idx on activity_log(created_at desc);
+create index if not exists activity_user_idx on activity_log(user_id, created_at desc);
+create index if not exists activity_type_idx on activity_log(type, created_at desc);
 create index if not exists profiles_email_idx on profiles(lower(email));
 create index if not exists lessons_course_sort_idx on lessons(course_id, sort);
 create index if not exists orders_user_created_idx on course_orders(user_id, created_at desc);

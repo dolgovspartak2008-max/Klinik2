@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/css/cab-base.css?v=20261113c" />
-  <link rel="stylesheet" href="/assets/css/account.css?v=20261113c" />
+  <link rel="stylesheet" href="/assets/css/account.css?v=20261116a" />
   <link rel="stylesheet" href="/assets/css/courses.css?v=20261114d" />
   <link rel="stylesheet" href="/assets/css/cab-theme.css?v=20261113c" />
 </head>
@@ -51,6 +51,8 @@
           <button role="tab" type="button" class="adm-tab" data-tab="broadcast" hidden aria-selected="false">Рассылка</button>
           <button role="tab" type="button" class="adm-tab" data-tab="c-courses" aria-selected="false">Курсы</button>
           <button role="tab" type="button" class="adm-tab" data-tab="c-orders" aria-selected="false">Заказы курсов <span class="adm-badge" data-c-orders-badge hidden></span></button>
+          <button role="tab" type="button" class="adm-tab" data-tab="c-students" aria-selected="false">Ученики</button>
+          <button role="tab" type="button" class="adm-tab" data-tab="c-log" aria-selected="false">Журнал</button>
           <button role="tab" type="button" class="adm-tab" data-tab="c-sales" hidden aria-selected="false">Комплекты и промокоды</button>
           <button role="tab" type="button" class="adm-tab" data-tab="c-stats" hidden aria-selected="false">Аналитика курсов</button>
           <button role="tab" type="button" class="adm-tab" data-tab="events" hidden aria-selected="false">Журнал событий</button>
@@ -140,7 +142,7 @@
         <section class="adm-panel" data-panel="c-orders" hidden aria-label="Заказы курсов">
           <div class="adm-explain">
             <h2>Заказы курсов</h2>
-            <p>Пока онлайн-оплата не подключена, клиент оформляет заказ на сайте, а вы согласуете с ним оплату. Когда деньги получены — нажмите <b>«Оплата получена»</b> (или кнопку в Telegram-боте): доступ откроется автоматически, клиент получит уведомление. Повторное нажатие ничего не удвоит. Неоплаченные заказы отменяются через 72 часа.</p>
+            <p>При оплате через ЮKassa доступ открывается сам. Если заказ «ждёт оплаты», а деньги уже пришли, сайт перепроверит платёж в ЮKassa при открытии этой вкладки и при входе клиента в кабинет. Оплата наличными или переводом — нажмите <b>«Оплата получена»</b>: доступ откроется сразу. Повторное нажатие ничего не удвоит.</p>
           </div>
           <form class="adm-toolbar" data-o-form role="search">
             <label class="field field--inline"><span>Статус</span>
@@ -157,6 +159,54 @@
             <button class="btn btn--primary" type="submit">Найти</button>
           </form>
           <div data-c-body></div>
+        </section>
+
+        <section class="adm-panel" data-panel="c-students" hidden aria-label="Ученики">
+          <div class="adm-explain">
+            <h2>Ученики</h2>
+            <p>Все, кто зарегистрировался на сайте: какие курсы купили, сколько уроков прошли, когда последний раз заходили. Нажмите <b>«Подробнее»</b> — откроется карточка с заказами, прогрессом по каждому уроку, просмотрами и полным журналом действий клиента.</p>
+          </div>
+          <div class="adm-kpis" data-st-kpis></div>
+          <form class="adm-toolbar" data-st-form role="search">
+            <label class="field field--inline"><span>Показать</span>
+              <select data-st-filter>
+                <option value="">Всех</option>
+                <option value="buyers">Купили курс</option>
+                <option value="pending">Ждут оплаты</option>
+                <option value="no_purchase">Без покупки</option>
+              </select></label>
+            <label class="field field--grow"><span class="sr-only">Поиск</span>
+              <input data-st-q type="search" placeholder="Имя, email, телефон или № клиента" /></label>
+            <button class="btn btn--primary" type="submit">Найти</button>
+          </form>
+          <div data-st-list></div>
+        </section>
+
+        <section class="adm-panel" data-panel="c-log" hidden aria-label="Журнал">
+          <div class="adm-explain">
+            <h2>Журнал действий</h2>
+            <p>Что происходит на сайте: регистрации, заказы и оплаты, открытые и пройденные уроки, попытки смотреть с двух устройств, а также действия администратора. Новые события сверху. Нажмите на имя клиента, чтобы открыть его карточку.</p>
+            <p class="cab-muted">Журнал ведётся с момента этого обновления — более ранние действия в нём не появятся (заказы и прогресс видны в карточке ученика).</p>
+          </div>
+          <div class="adm-kpis" data-log-kpis></div>
+          <form class="adm-toolbar" data-log-form role="search">
+            <label class="field field--inline"><span>Что показать</span>
+              <select data-log-group>
+                <option value="">Все события</option>
+                <option value="buy">Покупки и оплаты</option>
+                <option value="watch">Просмотры уроков</option>
+                <option value="account">Регистрации и входы</option>
+                <option value="alert">Подозрительное</option>
+                <option value="admin">Действия администратора</option>
+              </select></label>
+            <label class="field field--grow"><span class="sr-only">Поиск</span>
+              <input data-log-q type="search" placeholder="Имя, email, телефон, № клиента или № заказа" /></label>
+            <button class="btn btn--primary" type="submit">Найти</button>
+            <button class="btn btn--outline" type="button" data-log-refresh>Обновить</button>
+          </form>
+          <label class="check adm-log-visits"><input type="checkbox" data-log-visits /><span>Показывать заходы на сайт (каждый визит после перерыва 30 минут)</span></label>
+          <ol class="adm-events" data-log-list></ol>
+          <button class="btn btn--outline" type="button" data-log-more hidden>Показать ещё</button>
         </section>
 
         <section class="adm-panel" data-panel="c-sales" hidden aria-label="Комплекты и промокоды"><div data-c-body></div></section>
@@ -204,5 +254,6 @@
   <script src="/assets/js/courses.js?v=20261114d"></script>
   <script src="/assets/js/storage-upload.js"></script>
   <script src="/assets/js/admin-courses.js"></script>
+  <script src="/assets/js/admin-activity.js?v=20261116a"></script>
 </body>
 </html>

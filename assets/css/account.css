@@ -458,3 +458,16 @@ body.has-modal { overflow: hidden; }
   font-weight: 500; font-size: 16px; color: var(--ink);
 }
 .cab .field textarea:focus { outline: none; border-color: var(--indigo-400); box-shadow: 0 0 0 4px rgba(111,140,255,.25); }
+
+/* журнал действий и карточка ученика */
+.adm-ev--good { box-shadow: inset 4px 0 0 var(--accent, #1aa37a); }
+.adm-ev__who { font-weight: 600; }
+.adm-ev__who .chip-status { margin-left: 4px; }
+.adm-log-visits { margin: 12px 0; }
+[data-st-kpis], [data-log-kpis] { margin-bottom: 18px; }
+[data-st-kpis]:empty, [data-log-kpis]:empty { display: none; }
+.adm-progress { display: block; height: 6px; margin-top: 6px; border-radius: 999px; background: var(--indigo-100); overflow: hidden; max-width: 320px; }
+.adm-progress i { display: block; height: 100%; background: var(--indigo-600); border-radius: inherit; }
+.adm-panel h3 + .adm-table-wrap, .adm-drawer h3 + .adm-table-wrap { margin-top: 8px; }
+[data-st-list] .chip-status { white-space: normal; }
+[data-st-list] td { overflow-wrap: anywhere; }

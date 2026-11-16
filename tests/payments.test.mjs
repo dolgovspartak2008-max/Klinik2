@@ -121,6 +121,16 @@ assert.ok(list.find((r) => r.id === order.id).payment.method.includes("ЮKassa")
 const my = await dispatch("my_courses", {}, student);
 assert.equal(my.online_payment, true); assert.ok(my.orders.every((r) => r.payment_id === undefined));
 
+// уведомление ЮKassa не дошло и клиент не вернулся на сайт: доступ откроется при открытии кабинета
+const late = { id: "u-late", email: "late@example.com", emailVerified: true, name: "Г" };
+const o4 = (await dispatch("course_order_create", { p_item_type: "course", p_item_id: COURSE, p_key: "k-00000005" }, late)).order;
+await dispatch("course_payment_start", { p_order: o4.id }, late, sql, ctx);
+const p4 = Object.values(payments).pop();
+p4.status = "succeeded"; p4.paid = true;
+const myLate = await dispatch("my_courses", {}, late);
+assert.equal(myLate.courses.length, 1, "курс выдан без уведомления ЮKassa");
+assert.equal(myLate.orders[0].status, "paid");
+
 // чек 54-ФЗ
 process.env.YOOKASSA_RECEIPT = "1";
 const third = { id: "u-3", email: "c@example.com", emailVerified: true, name: "В" };
