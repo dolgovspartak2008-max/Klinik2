@@ -1,7 +1,8 @@
 import { authUser } from "./_lib/auth.js";
 import { db, ensureProfile, requireAdmin } from "./_lib/db.js";
 import { fail, json, method, uuid } from "./_lib/http.js";
-import { checkPayment, markOrderPaid, startPayment } from "./_lib/payments.js";
+import { adminActivity, adminActivitySummary, adminStudent, adminStudents, deviceLabel, logEvent } from "./_lib/activity.js";
+import { checkPayment, markOrderPaid, startPayment, syncPendingPayments } from "./_lib/payments.js";
 import { yookassaEnabled } from "./_lib/yookassa.js";
 
 const PUBLIC = new Set(["courses_catalog", "course_detail"]);
@@ -181,9 +182,15 @@ async function createOrder(sql, args, user) {
     `insert into course_orders (user_id, course_id, total, status, idempotency_key, paid_at)
      values ($1, $2, $3, $4, $5, case when $4 = 'paid' then now() else null end)
      on conflict (user_id, idempotency_key) do update set idempotency_key = excluded.idempotency_key
-     returning *`,
+     returning *, (xmax = 0) as inserted`,
     [user.id, courseId, total, status, key],
   );
+  const { inserted, ...created } = rows[0];
+  rows[0] = created;
+  if (inserted) {
+    await logEvent(sql, "order_created", { actor: user.id, course: courseId, order: created.id, details: { total } });
+    if (status === "paid") await logEvent(sql, "order_paid", { actor: user.id, course: courseId, order: created.id, details: { total, method: "бесплатно" } });
+  }
   if (status === "paid") await sql.query(
     `insert into course_access (user_id, course_id, source) values ($1, $2, 'purchase')
      on conflict (user_id, course_id) do update set revoked_at = null, granted_at = now()`,
@@ -199,6 +206,8 @@ function publicOrder({ payment_id, payment_url, payment_attempt, idempotency_key
 
 async function myCourses(sql, user) {
   const profile = await ensureProfile(user);
+  // заказ «ждёт оплаты», а платёж уже прошёл — откроем доступ прямо сейчас
+  await syncPendingPayments(sql, { userId: user.id, limit: 5 }).catch((error) => console.error("sync my", error?.message || error));
   const access = await sql.query(
     `select a.*, c.*, k.slug as category_slug, k.title as category_title,
        count(l.id) filter (where not l.hidden and l.video_path is not null)::int as lesson_count,
@@ -250,6 +259,7 @@ async function saveProgress(sql, args, user) {
   const position = Math.max(0, number(args.p_position));
   const duration = number(args.p_duration) || lesson.duration_sec || null;
   const completed = !!args.p_completed || (duration && position >= duration * 0.9);
+  const before = await sql.query(`select completed_at from lesson_progress where user_id=$1 and lesson_id=$2`, [user.id, lessonId]);
   await sql.query(
     `insert into lesson_progress (user_id, lesson_id, position_sec, duration_sec, completed_at, updated_at)
      values ($1, $2, $3, $4, case when $5 then now() else null end, now())
@@ -259,7 +269,13 @@ async function saveProgress(sql, args, user) {
        updated_at = now()`,
     [user.id, lessonId, position, duration, completed],
   );
-  return { ok: true, completed, progress: await courseProgress(sql, user.id, lesson.course_id) };
+  const progress = await courseProgress(sql, user.id, lesson.course_id);
+  // «урок пройден» и «курс пройден» — только в первый раз
+  if (completed && !before[0]?.completed_at) {
+    await logEvent(sql, "lesson_completed", { actor: user.id, course: lesson.course_id, lesson: lessonId });
+    if (progress.total && progress.completed >= progress.total) await logEvent(sql, "course_completed", { actor: user.id, course: lesson.course_id });
+  }
+  return { ok: true, completed, progress };
 }
 
 async function adminOverview(sql) {
@@ -343,6 +359,7 @@ async function adminLessonSave(sql, args) {
 
 async function adminOrders(sql, args) {
   const status = String(args.p_status || "");
+  if (status === "pending" || status === "") await syncPendingPayments(sql, { limit: 20 }).catch((error) => console.error("sync admin", error?.message || error));
   const values = status ? [status] : [];
   const rows = await sql.query(
     `select o.*, c.title, p.email, p.name, p.phone,
@@ -355,12 +372,12 @@ async function adminOrders(sql, args) {
     payment: row.paid_at && row.payment_method ? { method: row.payment_method, created_at: row.paid_at } : null, user: { id: row.user_id, name: row.name, email: row.email, phone: row.phone, client_no: String(row.user_id).slice(0, 8) } }));
 }
 
-async function adminMarkPaid(sql, args) {
+async function adminMarkPaid(sql, args, admin) {
   const id = uuid(args.p_order);
   const method = String(args.p_method || "").trim().slice(0, 120);
   if (!method) throw httpError("method_required");
   // переводим в «оплачен» только ожидающий заказ — повторное нажатие ничего не меняет
-  return markOrderPaid(sql, id, method, args.p_note || null);
+  return markOrderPaid(sql, id, method, args.p_note || null, { actor: admin.id });
 }
 
 async function heartbeat(sql, args, user) {
@@ -382,7 +399,7 @@ async function heartbeat(sql, args, user) {
 }
 
 export async function dispatch(fn, args, user, sql = db(), ctx = {}) {
-  if (user) await ensureProfile(user);
+  if (user) await ensureProfile(user, ctx);
   if (fn === "courses_catalog") return catalog(sql, user);
   if (fn === "course_detail") return detail(sql, args, user);
   if (!user) throw httpError("not_authenticated", 401);
@@ -410,12 +427,17 @@ export async function dispatch(fn, args, user, sql = db(), ctx = {}) {
   if (fn === "update_my_profile") {
     const name = String(args.p_name || "").trim().slice(0, 60);
     if (name.length < 2) throw httpError("bad_name");
-    await sql.query(`update profiles set name=$1,phone=$2,updated_at=now() where id=$3`, [name, String(args.p_phone || "").trim().slice(0, 30), user.id]);
+    const before = await sql.query(`select name, phone from profiles where id=$1`, [user.id]);
+    const phone = String(args.p_phone || "").trim().slice(0, 30);
+    await sql.query(`update profiles set name=$1,phone=$2,updated_at=now() where id=$3`, [name, phone, user.id]);
+    const changed = [before[0]?.name !== name && "имя", before[0]?.phone !== phone && "телефон"].filter(Boolean);
+    if (changed.length) await logEvent(sql, "profile_updated", { actor: user.id, details: { changed } });
     return { ok: true };
   }
   if (fn === "set_news_opt_in") return { ok: true };
   if (fn === "delete_my_account") {
     await sql.query(`update profiles set status='blocked',updated_at=now() where id=$1`, [user.id]);
+    await logEvent(sql, "account_deleted", { actor: user.id });
     return { ok: true };
   }
   if (fn === "course_player") return player(sql, args, user);
@@ -426,11 +448,13 @@ export async function dispatch(fn, args, user, sql = db(), ctx = {}) {
     return { ok: true };
   }
   if (fn === "course_order_cancel") {
-    await sql.query(`update course_orders set status='cancelled' where id=$1 and user_id=$2 and status='pending'`, [uuid(args.p_order), user.id]);
+    const cancelled = await sql.query(`update course_orders set status='cancelled' where id=$1 and user_id=$2 and status='pending' returning id, course_id`, [uuid(args.p_order), user.id]);
+    if (cancelled[0]) await logEvent(sql, "order_cancelled", { actor: user.id, course: cancelled[0].course_id, order: cancelled[0].id, details: { by: "client" } });
     return { ok: true };
   }
   if (fn === "set_course_news") {
     await sql.query(`update profiles set course_news=$1,updated_at=now() where id=$2`, [!!args.p_on, user.id]);
+    await logEvent(sql, "profile_updated", { actor: user.id, details: { changed: [args.p_on ? "включил новости о курсах" : "отключил новости о курсах"] } });
     return { ok: true, course_news: !!args.p_on };
   }
   if (fn === "gift_activate") throw httpError("gift_invalid");
@@ -439,19 +463,36 @@ export async function dispatch(fn, args, user, sql = db(), ctx = {}) {
   if (fn === "admin_me") return { ok: true };
   if (fn === "admin_courses_overview") return adminOverview(sql);
   if (fn === "admin_course_get") return adminCourseGet(sql, args);
-  if (fn === "admin_course_save") return adminCourseSave(sql, args);
-  if (fn === "admin_lesson_save") return adminLessonSave(sql, args);
+  if (fn === "admin_course_save") {
+    const saved = await adminCourseSave(sql, args);
+    await logEvent(sql, "admin_course_saved", { actor: user.id, course: saved.id, details: { price: args.p?.price === "" || args.p?.price == null ? null : number(args.p.price), new: !args.p?.id } });
+    return saved;
+  }
+  if (fn === "admin_lesson_save") {
+    const before = args.p?.id ? await sql.query(`select hidden from lessons where id=$1`, [uuid(args.p.id)]) : [];
+    const saved = await adminLessonSave(sql, args);
+    const [after] = await sql.query(`select course_id, hidden from lessons where id=$1`, [saved.id]);
+    const type = before[0] && before[0].hidden !== after?.hidden ? (after.hidden ? "admin_lesson_hidden" : "admin_lesson_published") : "admin_lesson_saved";
+    await logEvent(sql, type, { actor: user.id, course: after?.course_id, lesson: saved.id, details: { new: !args.p?.id } });
+    return saved;
+  }
   if (fn === "admin_course_orders") return adminOrders(sql, args);
-  if (fn === "admin_order_mark_paid") return adminMarkPaid(sql, args);
+  if (fn === "admin_order_mark_paid") return adminMarkPaid(sql, args, user);
+  if (fn === "admin_activity") return adminActivity(sql, args);
+  if (fn === "admin_activity_summary") return adminActivitySummary(sql);
+  if (fn === "admin_students") return adminStudents(sql, args);
+  if (fn === "admin_student") return adminStudent(sql, args);
   if (fn === "admin_category_save") {
     const value = args.p || {};
     const id = value.id ? uuid(value.id) : null;
     const params = [String(value.slug || "").toLowerCase(), String(value.title || ""), String(value.description || ""), number(value.sort)];
     const rows = id ? await sql.query(`update course_categories set slug=$1,title=$2,description=$3,sort=$4 where id=$5 returning id`, [...params, id]) : await sql.query(`insert into course_categories(slug,title,description,sort) values($1,$2,$3,$4) returning id`, params);
+    await logEvent(sql, "admin_category_saved", { actor: user.id, details: { title: params[1] } });
     return { ok: true, id: rows[0].id };
   }
   if (fn === "admin_category_delete") {
-    await sql.query(`delete from course_categories where id=$1 and not exists(select 1 from courses where category_id=$1)`, [uuid(args.p_id)]);
+    const deleted = await sql.query(`delete from course_categories where id=$1 and not exists(select 1 from courses where category_id=$1) returning title`, [uuid(args.p_id)]);
+    if (deleted[0]) await logEvent(sql, "admin_category_deleted", { actor: user.id, details: { title: deleted[0].title } });
     return { ok: true };
   }
   if (fn === "admin_course_set_status") {
@@ -464,15 +505,18 @@ export async function dispatch(fn, args, user, sql = db(), ctx = {}) {
       if (!priced.length) throw httpError("price_required");
     }
     await sql.query(`update courses set status=$1,updated_at=now() where id=$2`, [status, id]);
+    await logEvent(sql, "admin_course_status", { actor: user.id, course: id, details: { status } });
     return { ok: true };
   }
   if (fn === "admin_lesson_reorder") {
     const courseId = uuid(args.p_course), ids = Array.isArray(args.p_ids) ? args.p_ids.map(uuid) : [];
     for (let i = 0; i < ids.length; i++) await sql.query(`update lessons set sort=$1 where id=$2 and course_id=$3`, [i + 1, ids[i], courseId]);
+    await logEvent(sql, "admin_lessons_reordered", { actor: user.id, course: courseId });
     return { ok: true };
   }
   if (fn === "admin_order_cancel") {
-    await sql.query(`update course_orders set status='cancelled',note=$2 where id=$1 and status='pending'`, [uuid(args.p_order), String(args.p_reason || "")]);
+    const cancelled = await sql.query(`update course_orders set status='cancelled',note=$2 where id=$1 and status='pending' returning id, user_id, course_id`, [uuid(args.p_order), String(args.p_reason || "")]);
+    if (cancelled[0]) await logEvent(sql, "order_cancelled", { actor: user.id, user: cancelled[0].user_id, course: cancelled[0].course_id, order: cancelled[0].id, details: { by: "admin", reason: String(args.p_reason || "").slice(0, 300) } });
     return { ok: true };
   }
   if (fn === "admin_access_revoke_order") {
@@ -480,10 +524,12 @@ export async function dispatch(fn, args, user, sql = db(), ctx = {}) {
     if (!rows[0]) throw httpError("not_found", 404);
     await sql.query(`update course_access set revoked_at=now() where user_id=$1 and course_id=$2 and revoked_at is null`, [rows[0].user_id, rows[0].course_id]);
     await sql.query(`update playback_sessions set ended_at=now(), end_reason='revoked' where user_id=$1 and ended_at is null`, [rows[0].user_id]);
+    await logEvent(sql, "access_revoked", { actor: user.id, user: rows[0].user_id, course: rows[0].course_id, order: uuid(args.p_order) });
     return { ok: true };
   }
   if (fn === "admin_order_refund") {
     const rows = await sql.query(`update course_orders set status='refunded',note=$2 where id=$1 and status='paid' returning *`, [uuid(args.p_order), String(args.p_reason || "")]);
+    if (rows[0]) await logEvent(sql, "order_refunded", { actor: user.id, user: rows[0].user_id, course: rows[0].course_id, order: rows[0].id, details: { total: Number(rows[0].total), reason: String(args.p_reason || "").slice(0, 300), revoked: !!args.p_revoke } });
     if (rows[0] && args.p_revoke) {
       await sql.query(`update course_access set revoked_at=now() where user_id=$1 and course_id=$2 and revoked_at is null`, [rows[0].user_id, rows[0].course_id]);
       await sql.query(`update playback_sessions set ended_at=now(), end_reason='revoked' where user_id=$1 and ended_at is null`, [rows[0].user_id]);
@@ -499,7 +545,7 @@ export default async function handler(req, res) {
     const fn = String(req.body?.fn || "");
     const args = req.body?.args || {};
     const user = await authUser(req, PUBLIC.has(fn));
-    json(res, 200, await dispatch(fn, args, user, db(), { origin: siteOrigin(req) }));
+    json(res, 200, await dispatch(fn, args, user, db(), { origin: siteOrigin(req), device: deviceLabel(req) }));
   } catch (error) {
     fail(res, error);
   }

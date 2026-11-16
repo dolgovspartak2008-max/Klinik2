@@ -1,5 +1,10 @@
 import { neon } from "@neondatabase/serverless";
 
+import { ensureActivitySchema, logEvent } from "./activity.js";
+
+// перерыв, после которого заход на сайт считается новым визитом
+const VISIT_GAP_MS = 30 * 60 * 1000;
+
 let client;
 let testClient = null;
 
@@ -26,20 +31,29 @@ export function isAdminUser(user) {
   return !!user.email && user.emailVerified === true && adminEmails().includes(user.email);
 }
 
-export async function ensureProfile(user) {
+export async function ensureProfile(user, ctx = {}) {
   const sql = db();
+  await ensureActivitySchema(sql);
   const role = isAdminUser(user) ? "admin" : "student";
+  // prev — состояние до этого запроса: новая запись = регистрация, давно не был = новый визит
   const rows = await sql.query(
-    `insert into profiles (id, email, name, role)
-     values ($1, $2, $3, $4)
+    `with prev as (select last_seen_at from profiles where id = $1)
+     insert into profiles (id, email, name, role, last_seen_at)
+     values ($1, $2, $3, $4, now())
      on conflict (id) do update set email = excluded.email,
        name = case when profiles.name = '' then excluded.name else profiles.name end,
        role = excluded.role,
+       last_seen_at = now(),
        updated_at = now()
-     returning *`,
+     returning *, (select count(*) from prev)::int as existed, (select last_seen_at from prev) as prev_seen_at`,
     [user.id, user.email || `${user.id}@neon.local`, user.name || "", role],
   );
-  return rows[0];
+  const { existed, prev_seen_at: prevSeen, ...profile } = rows[0];
+  if (!existed) await logEvent(sql, "signup", { actor: user.id, details: { device: ctx.device || "" } });
+  else if (!prevSeen || Date.now() - new Date(prevSeen).getTime() > VISIT_GAP_MS) {
+    await logEvent(sql, "visit", { actor: user.id, details: { device: ctx.device || "" } });
+  }
+  return profile;
 }
 
 export async function requireAdmin(user) {

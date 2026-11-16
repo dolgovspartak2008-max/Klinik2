@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 
+import { ensureActivitySchema } from "./_lib/activity.js";
 import { db } from "./_lib/db.js";
 import { json, method, fail } from "./_lib/http.js";
 import { schemaStatements } from "./_generated/schema.js";
@@ -24,6 +25,8 @@ export default async function handler(req, res) {
       const lessons = (Array.isArray(req.body.lessons) ? req.body.lessons : []).filter((id) => /^[0-9a-f-]{36}$/.test(id));
       const users = await sql.query(`select id from profiles where lower(email) = any($1::text[])`, [emails]);
       const ids = users.map((u) => u.id);
+      await ensureActivitySchema(sql);
+      await sql.query(`delete from activity_log where user_id = any($1::text[]) or actor_id = any($1::text[])`, [ids]);
       for (const table of ["playback_sessions", "lesson_progress", "course_access", "course_orders"]) {
         await sql.query(`delete from ${table} where user_id = any($1::text[])`, [ids]);
       }

@@ -218,3 +218,22 @@ test("/api/setup закрыт без SETUP_TOKEN и с неверным токе
   assert.equal(JSON.parse(res.body).lessons, 10);
   delete process.env.SETUP_TOKEN;
 });
+
+test("журнал действий: регистрация, заказ, оплата и просмотры видны админу, ученику — нет", async () => {
+  const feed = await dispatch("admin_activity", { p_limit: 200 }, admin);
+  const types = feed.map((e) => e.type);
+  for (const type of ["signup", "order_created", "order_paid", "lesson_opened", "lesson_completed", "access_revoked", "video_denied", "other_device_blocked"]) {
+    assert.ok(types.includes(type), "в журнале есть " + type);
+  }
+  const paid = feed.find((e) => e.type === "order_paid");
+  assert.equal(paid.user.email, student.email);
+  assert.equal(paid.actor_is_admin, true, "оплату отметил админ");
+  assert.equal(types.filter((t) => t === "order_paid").length, 1, "повторное подтверждение не дублирует запись");
+  const card = await dispatch("admin_student", { p_user: student.id }, admin);
+  assert.equal(card.orders.length, 1);
+  assert.ok(card.events.length >= 5);
+  const list = await dispatch("admin_students", { p_filter: "" }, admin);
+  assert.ok(list.students.some((s) => s.id === student.id));
+  await expectCode(dispatch("admin_activity", {}, student), "forbidden");
+  await expectCode(dispatch("admin_students", {}, student), "forbidden");
+});

@@ -4,6 +4,7 @@
 // GET /v3/payments/{id} с секретным ключом. Уведомлению (webhook) и возврату из браузера
 // не доверяем — они лишь повод перепроверить. Сумма и валюта сверяются с заказом.
 // Повторные уведомления и повторные проверки доступ не дублируют.
+import { logEvent } from "./activity.js";
 import { createPayment, getPayment, isPaymentId, sameAmount, yookassaEnabled } from "./yookassa.js";
 
 function httpError(code, status = 400) {
@@ -27,7 +28,8 @@ export async function ensurePaymentColumns(sql) {
 
 // Перевод заказа в «оплачен» и выдача доступа. Общая для кнопки админа и ЮKassa.
 // allowCancelled — деньги реально пришли по заказу, который клиент успел отменить: доступ всё равно даём.
-export async function markOrderPaid(sql, orderId, method, note, { allowCancelled = false } = {}) {
+// actor — id администратора, нажавшего «Оплата получена»; null — подтвердила ЮKassa.
+export async function markOrderPaid(sql, orderId, method, note, { allowCancelled = false, actor = null } = {}) {
   const from = allowCancelled ? ["pending", "expired", "cancelled"] : ["pending", "expired"];
   const rows = await sql.query(
     `update course_orders set status='paid', payment_method=$2, note=coalesce($3, note), paid_at=now()
@@ -52,6 +54,8 @@ export async function markOrderPaid(sql, orderId, method, note, { allowCancelled
      where user_id=$1 and course_id=$2 and status='pending' and id<>$3`,
     [rows[0].user_id, rows[0].course_id, orderId],
   );
+  await logEvent(sql, "order_paid", { actor: actor || rows[0].user_id, user: rows[0].user_id, course: rows[0].course_id, order: orderId,
+    details: { method, total: Number(rows[0].total), by: actor ? "admin" : "yookassa" } });
   return { ok: true, already: false };
 }
 
@@ -70,6 +74,7 @@ export async function applyPayment(sql, payment) {
     if (!sameAmount(payment, order.total)) {
       console.error("yookassa amount mismatch", order.id, payment.id);
       await sql.query(`update course_orders set payment_status='amount_mismatch' where id=$1`, [order.id]);
+      await logEvent(sql, "payment_amount_mismatch", { user: order.user_id, course: order.course_id, order: order.id, details: { expected: Number(order.total), got: Number(payment?.amount?.value) } });
       return { ok: false, reason: "amount_mismatch", order };
     }
     if (order.status === "refunded") return { ok: true, status: "refunded", order };
@@ -82,7 +87,13 @@ export async function applyPayment(sql, payment) {
     return { ok: true, status: "paid", already: result.already, order };
   }
   // отменённый, ожидающий и т.п. — просто запоминаем статус текущего платежа
-  await sql.query(`update course_orders set payment_status=$2 where id=$1 and payment_id=$3`, [order.id, String(payment.status || ""), payment.id]);
+  const changed = await sql.query(
+    `update course_orders set payment_status=$2 where id=$1 and payment_id=$3 and payment_status is distinct from $2 returning id`,
+    [order.id, String(payment.status || ""), payment.id],
+  );
+  if (changed[0] && payment.status === "canceled") {
+    await logEvent(sql, "payment_canceled", { user: order.user_id, course: order.course_id, order: order.id, details: { reason: String(payment.cancellation_details?.reason || "").slice(0, 60) } });
+  }
   return { ok: true, status: payment.status, order };
 }
 
@@ -134,6 +145,7 @@ export async function startPayment(sql, orderId, user, { origin, email }) {
     `update course_orders set payment_id=$2, payment_status=$3, payment_url=$4 where id=$1 and status='pending'`,
     [order.id, payment.id, payment.status, payment.confirmation.confirmation_url],
   );
+  await logEvent(sql, "payment_started", { actor: user.id, course: order.course_id, order: order.id, details: { total: Number(order.total) } });
   return { url: payment.confirmation.confirmation_url };
 }
 
@@ -149,4 +161,32 @@ export async function checkPayment(sql, orderId, user) {
   if (applied.status === "paid") return out("paid");
   if (payment.status === "canceled") return out("canceled");
   return out(order.status === "pending" ? "waiting" : order.status);
+}
+
+// Подстраховка на случай, если уведомление ЮKassa не дошло, а клиент не вернулся на сайт
+// (или банк подтвердил СБП позже, чем страница ждала): перепроверяем неоплаченные заказы,
+// по которым уже создан платёж. Вызывается при открытии кабинета клиента и списка заказов в админке.
+// Источник правды тот же — API ЮKassa; повторная проверка ничего не дублирует.
+export async function syncPendingPayments(sql, { userId = null, limit = 10 } = {}) {
+  if (!yookassaEnabled()) return { checked: 0, paid: 0 };
+  await ensurePaymentColumns(sql);
+  const params = [Math.min(Math.max(Number(limit) || 10, 1), 30)];
+  if (userId) params.push(userId);
+  const orders = await sql.query(
+    `select id, payment_id from course_orders
+     where status = 'pending' and payment_id is not null and created_at > now() - interval '30 days'
+       ${userId ? "and user_id = $2" : ""}
+     order by created_at desc limit $1`,
+    params,
+  );
+  let paid = 0;
+  for (const order of orders) {
+    try {
+      const result = await applyPayment(sql, await getPayment(order.payment_id));
+      if (result.status === "paid") paid++;
+    } catch (error) {
+      console.error("yookassa sync", order.id, error?.message || error);
+    }
+  }
+  return { checked: orders.length, paid };
 }
